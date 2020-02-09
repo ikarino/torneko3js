@@ -13,6 +13,8 @@ export const defaultProbabilityConf = {
   kinoko: 0.10,
   hoimi: 0.3553, // kompota君の成果
   hoimiAttack: 0.30,
+  hoimiMove: 0.30,
+  hoimiMoveTurn: 300,
 }
 
 /**
@@ -85,7 +87,8 @@ export class Manager {
         friend.weakenDef,
         friend.hpDope,
         friend.atkDope ? friend.atkDope : 0,
-        this.pConf
+        this.pConf,
+        friend.isSticked !== undefined ? friend.isSticked : true,
       ));
     }
   
@@ -334,6 +337,7 @@ export class Manager {
    * 2. ホイミ発動を判断
    * 3. 攻撃可能なキャラの数を取得  <= ホイミと同じように攻撃可能なキャラごとに判定するモデルとする
    * 4. 攻撃を判断
+   * 5. いっしょにいてね（!isSticked）の場合、移動を判断
    * @param {Friend} f ホイミスライム
    */
   actionHoimiSlime(f: Friend): boolean {
@@ -385,6 +389,25 @@ export class Manager {
         return returnValue;
       }
     }
+
+    // 5.
+    const vacantTargets = this.map.findTargets(f.place, true, false);
+    if (
+      !f.isSticked &&                            // ここで待っててではない
+      Math.random() < this.pConf.hoimiMove &&    // 移動確率
+      this.turnNow > this.pConf.hoimiMoveTurn && // 移動開始ターン
+      !!vacantTargets.length                     // 移動場所がある
+      ) {
+        const newPlace = vacantTargets[randint(vacantTargets.length)];
+        // console.log("moved from ", f.place, " to ", newPlace);
+        this.map.setMap(f.place, 0);
+        this.map.setMap(newPlace, 10 + this.friends.indexOf(f));
+        f.place = newPlace;
+        // TODO
+        // 移動は「待ち」でなかったと判断すべきだろうか。
+        return true;
+    }
+
     return returnValue;
   }
 

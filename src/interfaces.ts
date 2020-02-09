@@ -16,6 +16,7 @@ export interface SCSFriendInput {
   weakenAtk: number,
   weakenDef: number,
   isSealed: boolean,
+  isSticked?: boolean,
 }
 
 export interface SCSConfigInput {
@@ -52,10 +53,12 @@ export interface Place {
 }
 
 export interface ProbabilityConfig {
-  attack: number,
-  divide: number,
-  kinoko: number,
-  hoimi: number,
-  hoimiAttack: number,
+  attack: number,        // 通常攻撃があたる確率
+  divide: number,        // スモールグールの分裂確率
+  kinoko: number,        // おばけキノコの特技使用率
+  hoimi: number,         // ホイミスライムの特技使用率
+  hoimiAttack: number,   // ホイミスライムの非封印時攻撃確率
+  hoimiMove: number,     // [半ホイミン用]ホイミスライムの移動確率
+  hoimiMoveTurn: number, // [半ホイミン用]ホイミスライムの移動開始ターン
 }
   

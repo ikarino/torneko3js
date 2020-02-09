@@ -14,5 +14,8 @@
   "dependencies": {
     "@types/node": "^13.7.0",
     "typescript": "^3.7.5"
+  },
+  "devDependencies": {
+    "esm": "^3.2.25"
   }
 }
