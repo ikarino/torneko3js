@@ -2,20 +2,10 @@
 //
 
 import { Unit, Friend, Enemy } from './unit';
-import { SCSMap } from './scsMap';
-import { Place, SCSInput, ProbabilityConfig, SCSConfigInput, SCSMapInput, SCSTrialOutput } from './interfaces';
-
-
-
-export const defaultProbabilityConf = {
-  attack: 0.92,
-  divide: 0.25,
-  kinoko: 0.10,
-  hoimi: 0.3553, // kompota君の成果
-  hoimiAttack: 0.30,
-  hoimiMove: 0.30,
-  hoimiMoveTurn: 300,
-}
+import { SCSField } from './scsField';
+import { Place, SCSInput, ProbabilityConfig, SCSConfigInput, SCSFieldInput, SCSTrialOutput } from './interfaces';
+import { defaultProbabilityConf } from './config';
+import checkInp from './checkInp';
 
 /**
  * 0～N-1のランダムな整数を返す。
@@ -31,30 +21,43 @@ const addPlace = (place1: Place, place2: Place): Place => {
     col: place1.col + place2.col
   }
 };
+
+const namesSkillAdjacentWOCorner: string[] = [
+  'おばけキノコ',
+  'メイジももんじゃ',
+  'メイジキメラ',
+  'ハエまどう',
+  'はねせんにん',
+  'フライングデビル',
+  'ランガー',
+  'ミステリードール',
+  'いしにんぎょう'
+];
+const namesSkillAdjacentWCorner: string[] = [
+  'スライムブレス',
+  'ドラゴスライム',
+  'ドラゴメタル'
+];
+const namesSkillAdjacent = namesSkillAdjacentWOCorner.concat(namesSkillAdjacentWCorner);
   
 export class Manager {
   inp: SCSInput;
   config: SCSConfigInput;
   pConf: ProbabilityConfig;
-  friends: Friend[];
-  enemys: Enemy[];
-  killCount: number;
-  turnNow: number;
-  map: SCSMap;
+  friends: Friend[] = [];
+  enemys: Enemy[] = [];
+  killCount: number = 0;
+  turnNow: number = 0;
+  field: SCSField = new SCSField({row: 0, col: 0, data: []});
   trialOutputs: SCSTrialOutput[];
   constructor(inp: SCSInput, pConf: ProbabilityConfig = defaultProbabilityConf) {
+    checkInp(inp);
     this.inp = inp;
     this.pConf = pConf;
     this.config = this.inp.config;
     this.trialOutputs = [];
-    // TODO
-    // init()と同じだけど、これを入れておかないとconstructorエラーになる。
-    // なんとか回避できないものか。
-    this.friends = [];
-    this.enemys = [];
-    this.killCount = 0;
-    this.turnNow = 0;
-    this.map = new SCSMap(this.inp.map);
+
+    this.init();
   }
 
   init(): void {
@@ -62,8 +65,8 @@ export class Manager {
     this.enemys = [];
     this.killCount = 0;
     this.turnNow = 0;
-    this.map = new SCSMap(this.inp.map);
-    // this.mapの中身
+    this.field = new SCSField(this.inp.field);
+    // this.fieldの中身
     // 0:     空き領域
     // 1:     壁
     // 9:     Enemy -> 後で20以降に連番で振る
@@ -72,40 +75,28 @@ export class Manager {
 
     for (const [order, friend] of this.inp.friends.entries()) {
       // placeを探す
-      const mapIndex = this.inp.map.data.findIndex(m => m === order+10);
+      const FieldIndex = this.inp.field.data.findIndex(m => m === order+10);
       const place = {
-        row: Math.floor(mapIndex/this.inp.map.col),
-        col: mapIndex%this.inp.map.col
+        row: Math.floor(FieldIndex/this.inp.field.col),
+        col: FieldIndex%this.inp.field.col
       };
-      this.friends.push(new Friend(
-        friend.name,
-        friend.lv,
-        place,
-        friend.isSealed,
-        friend.doubleSpeed,
-        friend.weakenAtk,
-        friend.weakenDef,
-        friend.hpDope,
-        friend.atkDope ? friend.atkDope : 0,
-        this.pConf,
-        friend.isSticked !== undefined ? friend.isSticked : true,
-      ));
+      this.friends.push(new Friend(friend, place, this.pConf));
     }
   
     // Enemyの読み込み
-    const enemyMapIndex = this.inp.map.data.reduce((accumulator: number[], currentValue, index) => {
+    const enemyFieldIndex = this.inp.field.data.reduce((accumulator: number[], currentValue, index) => {
       if (currentValue === 9) {
         accumulator.push(index);
       }
       return accumulator;
     }, [])
-    for (const mapIndex of enemyMapIndex) {
+    for (const FieldIndex of enemyFieldIndex) {
       const place = {
-        row: Math.floor(mapIndex/this.inp.map.col), 
-        col: mapIndex%this.inp.map.col
+        row: Math.floor(FieldIndex/this.inp.field.col), 
+        col: FieldIndex%this.inp.field.col
       };
       this.enemys.push(new Enemy(place, this.killCount, this.pConf));
-      this.map.setMap(place, this.killCount+20);
+      this.field.setField(place, this.killCount+20);
       this.killCount += 1;
     }
   }
@@ -133,7 +124,7 @@ export class Manager {
       index = index > 7 ? index - 8 : index;
 
       const place = addPlace(sumo.place, dplaceList[index]);
-      if (this.map.getMap(place) === 0) {
+      if (this.field.getField(place) === 0) {
         this.addEnemy(place);
         return true;
       }
@@ -148,7 +139,7 @@ export class Manager {
   addEnemy(place: Place) : void {
     if (Math.random() < this.pConf.divide) {
       this.enemys.push(new Enemy(place, this.killCount, this.pConf));
-      this.map.setMap(place, this.killCount+20);
+      this.field.setField(place, this.killCount+20);
       this.killCount += 1;
     }
   }
@@ -196,25 +187,25 @@ export class Manager {
     // 敵の行動
     for (let enemy of this.enemys) {
       // 1. 攻撃を試みる
-      const targets = this.map.findTargets(enemy.place);
+      const targets = this.field.findTargets(enemy.place);
       if (targets.length !== 0) {
         const target = targets[randint(targets.length)];
         const friend = this.friends[target-10]
         const result = enemy.attack(friend);
 
         // 対象がスモールグールだった場合は分裂処理
-        if (friend.name === "スモールグール" && ! friend.isSealed && result) {
+        if (friend.name === 'スモールグール' && ! friend.isSealed && result) {
           this.divide(this.friends[target-10]);
         }
         continue; // 攻撃したら終了
       }
 
       // 2. 移動を試みる
-      const emptyPlaces = this.map.findTargets(enemy.place, true, false);
+      const emptyPlaces = this.field.findTargets(enemy.place, true, false);
       if (emptyPlaces.length !== 0) {
         const place = emptyPlaces[randint(emptyPlaces.length)];
-        this.map.setMap(enemy.place, 0);
-        this.map.setMap(place, enemy.num+20);
+        this.field.setField(enemy.place, 0);
+        this.field.setField(place, enemy.num+20);
         enemy.place = place;
       }
 
@@ -239,12 +230,12 @@ export class Manager {
   actionFriend(f: Friend): boolean {
     if (f.isSealed) {
       return this.actionNormal(f);
-    } else if (f.name === "キラーマシン") {
+    } else if (f.name === 'キラーマシン' || f.name === 'さそりかまきり') {
       return this.actionKillerMachine(f);
-    } else if (f.name === "ホイミスライム") {
+    } else if (f.name === 'ホイミスライム') {
       return this.actionHoimiSlime(f);
-    } else if (f.name === "おばけキノコ") {
-      return this.actionObakeKinoko(f);
+    } else if (namesSkillAdjacent.includes(f.name)) {
+      return this.actionSkillAdjacent(f);
     } else {
       return this.actionNormal(f);
     }
@@ -254,30 +245,31 @@ export class Manager {
    * 単純な殴り攻撃の実装
    * @param {Friend} friend 攻撃するFriend
    * @param {Enemy} enemy 攻撃されるスモグル
+   * @param {number} damage 固定ダメージの場合は与える
    * @returns {string} 攻撃の終了判定, killed/survived/missed
    */
-  attack(friend: Friend, enemy: Enemy): string {
-    const result = friend.attack(enemy);
+  attack(friend: Friend, enemy: Enemy, fixedDamage: number = 0): string {
+    const result = friend.attack(enemy, fixedDamage);
 
     if (enemy.chp <= 0) {
       // 攻撃後に倒れた場合
       friend.getExp();
-      this.map.setMap(enemy.place, 0);
+      this.field.setField(enemy.place, 0);
       this.enemys = this.enemys.filter(e => e !== enemy);
-      return "killed";
+      return 'killed';
     } else if (result) {
       // 攻撃後に生き残った場合（分裂処理）
       const wasAbleToDivide = this.divide(enemy);
       if (!wasAbleToDivide) {
         friend.divisionLossCount += 1;
       }
-      return "survived";
+      return 'survived';
     }
-    return "missed";
+    return 'missed';
   }
 
   actionNormal(f: Friend): boolean {
-    const targets = this.map.findTargets(f.place);
+    const targets = this.field.findTargets(f.place);
     if (targets.length !== 0) {
       const target = targets[randint(targets.length)];
       const enemy = this.getEnemyByNumber(target - 20);
@@ -288,24 +280,107 @@ export class Manager {
   }
 
   /**
-   * おばけキノコの行動
-   * @param {Friend} f おばけキノコ
+   * 隣接特技を持つキャラの行動
+   * @param {Friend} f 隣接特技を持つキャラ
    */
-  actionObakeKinoko(f: Friend): boolean {
-    const targets = this.map.findTargets(f.place);
+  actionSkillAdjacent(f: Friend): boolean {
+    // 角抜けが対象かどうかで対象を場合分け
+    const wCorner = namesSkillAdjacentWCorner.includes(f.name);
+    const targets = this.field.findTargets(f.place, false, wCorner);
     if (targets.length !== 0) {
-      // 対象を決定するところまでは同じ
       const target = targets[randint(targets.length)];
       const enemy = this.getEnemyByNumber(target - 20);
 
       // 特技を使う場合
-      if (Math.random() < this.pConf.kinoko ) {
-        enemy.weakenAtk += 1;
-        enemy.setAtk();
-        return true; // ここで抜ける
+      switch(f.name) {
+        case 'おばけキノコ':
+          if (Math.random() < this.pConf.kinoko.skill ) {
+            enemy.weakenAtk += 1;
+            enemy.setAtk();
+            return true;
+          }
+          break;
+        case 'メイジももんじゃ':
+          if (Math.random() < this.pConf.merumon.skill ) {
+            enemy.isSealed = true;
+            return true;
+          }
+          break;
+        case 'メイジキメラ':
+          if (Math.random() < this.pConf.mekira.skill ) {
+            enemy.isSealed = true;
+            return true;
+          }
+          break;
+        case 'ハエまどう':
+          if (Math.random() < this.pConf.haeru.skill ) {
+            enemy.chp = Math.ceil(enemy.chp/4);
+            return true;
+          }
+          break;
+        case 'はねせんにん':
+          if (Math.random() < this.pConf.haeru.skill ) {
+            enemy.chp = Math.ceil(enemy.chp/2);
+            return true;
+          }
+          break;
+        case 'フライングデビル':
+          if (Math.random() < f.pConf.flida.skill) {
+            this.attack(f, enemy, 25);
+            return true;
+          }
+          break;
+        case 'ランガー':
+          if (Math.random() < f.pConf.rangas.skill) {
+            this.attack(f, enemy, 25);
+            return true;
+          }
+          break;
+        case 'ミステリードール':
+          if (Math.random() < f.pConf.mister.skill) {
+            if (randint(2) === 0) {
+              enemy.chp = Math.ceil(enemy.chp/2);
+            } else {
+              enemy.weakenAtk += 1;
+              enemy.setAtk();
+            }
+            return true;
+          }
+          break;
+        case 'いしにんぎょう':
+          if (Math.random() < f.pConf.isshi.skill) {
+            if (randint(2) === 0) {
+              enemy.chp = 1;
+            } else {
+              enemy.weakenAtk += 1;
+              enemy.setAtk();
+            }
+            return true;
+          }
+          break;
+        case 'スライムブレス':
+          if (Math.random() < f.pConf.lovelace.skill) {
+            this.attack(f, enemy, 10);
+            return true;
+          }
+          break;
+        case 'ドラゴスライム':
+          if (Math.random() < f.pConf.lovelace.skill) {
+            this.attack(f, enemy, 10);
+            return true;
+          }
+          break
+        case 'ドラゴメタル':
+          if (Math.random() < f.pConf.lovelace.skill) {
+            this.attack(f, enemy, 20);
+            return true;
+          }
+          break
+        default:
+          throw new Error("skill not implemented: "+ f.name);
       }
 
-      // 攻撃する場合
+      // 特技を使わなかったら攻撃する
       this.attack(f, enemy);
 
       return true;
@@ -314,17 +389,17 @@ export class Manager {
   }
 
   /**
-   * キラーマシンの行動
-   * @param {Friend} f キラーマシン
+   * キラーマシンまたはさそりかまきりの行動
+   * @param {Friend} f キラーマシンまたはさそりかまきり
    */
   actionKillerMachine(f: Friend): boolean {
-    const targets = this.map.findTargets(f.place);
+    const targets = this.field.findTargets(f.place);
     if (targets.length !== 0) {
       const target = targets[randint(targets.length)];
       const enemy = this.getEnemyByNumber(target - 20);
 
       const result = this.attack(f, enemy); // 攻撃1回目
-      if (result === "killed") return true; // 一回目で倒したら終了
+      if (result === 'killed') return true; // 一回目で倒したら終了
       this.attack(f, enemy);                // 攻撃2回目
       return true;
     }
@@ -348,7 +423,7 @@ export class Manager {
     for (let drow of [-1, 0, 1]) {
       for (let dcol of [-1, 0, 1]) {
         const place = addPlace(f.place, {row: drow, col: dcol});
-        const number = this.map.getMap(place);
+        const number = this.field.getField(place);
         if (drow === 0 && dcol === 0) { continue; }  // me
 
         if (10 <= number && number <= 19) {          // friends
@@ -365,7 +440,7 @@ export class Manager {
     // 2.
     let execSkill = false;
     for (let t = 0; t < hoimiTargets.length; t++) {
-      if (Math.random() < this.pConf.hoimi) {
+      if (Math.random() < this.pConf.hoimin.skill) {
         execSkill = true;
         break;
       }
@@ -379,11 +454,11 @@ export class Manager {
     }
 
     // 3.
-    const attackTargets = this.map.findTargets(f.place);
+    const attackTargets = this.field.findTargets(f.place);
     returnValue = returnValue || !!attackTargets.length;
     // 4.
     for (let enemyId of attackTargets) {
-      if (Math.random() < this.pConf.hoimiAttack) {
+      if (Math.random() < this.pConf.hoimin.attack) {
         let enemy = this.getEnemyByNumber(enemyId - 20);
         this.attack(f, enemy);
         return returnValue;
@@ -391,17 +466,17 @@ export class Manager {
     }
 
     // 5.
-    const vacantTargets = this.map.findTargets(f.place, true, false);
+    const vacantTargets = this.field.findTargets(f.place, true, false);
     if (
       !f.isSticked &&                            // ここで待っててではない
-      Math.random() < this.pConf.hoimiMove &&    // 移動確率
-      this.turnNow > this.pConf.hoimiMoveTurn && // 移動開始ターン
+      Math.random() < this.pConf.hoimin.move &&    // 移動確率
+      this.turnNow > this.pConf.hoimin.moveTurn && // 移動開始ターン
       !!vacantTargets.length                     // 移動場所がある
       ) {
         const newPlace = vacantTargets[randint(vacantTargets.length)];
-        // console.log("moved from ", f.place, " to ", newPlace);
-        this.map.setMap(f.place, 0);
-        this.map.setMap(newPlace, 10 + this.friends.indexOf(f));
+        // console.log('moved from ', f.place, ' to ', newPlace);
+        this.field.setField(f.place, 0);
+        this.field.setField(newPlace, 10 + this.friends.indexOf(f));
         f.place = newPlace;
         // TODO
         // 移動は「待ち」でなかったと判断すべきだろうか。
@@ -425,14 +500,14 @@ export class Manager {
 
     // result
     let result = true;
-    let reason = "";
+    let reason = '';
     let friendOrderKilled = -1;
     if (this.turnNow < this.config.turn) {
       result = false;
       if (this.enemys.length === 0) {
-        reason = "enemys are genocided";
+        reason = 'enemys are genocided';
       } else {
-        reason = "friends are killed";
+        reason = 'friends are killed';
         for (let order = 0; order < this.friends.length; order++) {
           if (this.friends[order].chp <= 0) {
             friendOrderKilled = order;

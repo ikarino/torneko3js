@@ -2,66 +2,66 @@
 // モンスター
 
 import { getBasicMonsterStatus } from "./status";
-import { Place, ProbabilityConfig } from './interfaces';
-import { defaultProbabilityConf } from "./manager";
-import { REFUSED } from "dns";
+import { SCSFriendInput, Place, ProbabilityConfig } from './interfaces';
+import { defaultProbabilityConf } from "./config";
 
 export class Unit {
-  name: string;
+  readonly name: string;
   lv: number;
-  mhp: number;
-  chp: number;
-  atk: number;
-  def: number;
-  recovery: number;
+  mhp: number = -1;
+  chp: number = -1;
+  atk: number = -1;
+  def: number = -1;
+  readonly recovery: number;
   exp: number;
   weakenAtk: number;
   weakenDef: number;
   isSealed: boolean;
-  atkDope: number;
+  readonly hpDope: number;
+  readonly atkDope: number;
   /*
    * 将来的な拡張
   isDancing: boolean;
   isConfused: boolean;
   isBline: boolean;
    */
-  pAttack: number;
   place: Place;
-  pconf: Object;
-  constructor(name: string, lv: number, weakenAtk: number, weakenDef: number, atkDope:number, place: Place, pConf: ProbabilityConfig) {
-    const status = getBasicMonsterStatus(name, lv);
+  pConf: ProbabilityConfig;
+  constructor(inp: SCSFriendInput, place: Place, pConf: ProbabilityConfig) {
+    this.name = inp.name;                                // モンスター名
+    this.lv = inp.lv;                                    // Lv
+    this.weakenAtk = inp.weakenAtk ? inp.weakenAtk : 0;  // 攻撃力弱化回数
+    this.weakenDef = inp.weakenDef ? inp.weakenDef : 0;  // 防御力弱化回数
+    this.atkDope = inp.atkDope ? inp.atkDope : 0;        // 攻撃力ドーピング
+    this.hpDope = inp.hpDope ? inp.hpDope : 0;           // HPドーピング
+    this.isSealed = inp.isSealed !== undefined ? inp.isSealed : false; // 封印状態
+    this.place = place;                                  // 位置座標[row, col]
+    this.pConf = pConf;                                  // 確率設定
 
-    this.name = name;
-    this.lv = lv;
-    this.place = place;
-    this.pconf = pConf;
-    this.weakenAtk = weakenAtk;
-    this.weakenDef = weakenDef;
-
-    this.mhp = status.mhp0;           // 最大HP
-    this.chp = status.mhp0;           // 現在HP
-    this.atk = status.atk0;           // 弱化前攻撃力
-    this.def = status.def0;           // 弱化前防御力
+    const status = getBasicMonsterStatus(inp.name, inp.lv);
     this.recovery = status.recovery;  // 回復定数
-    this.place = place;               // 位置座標[row, col]
     this.exp = status.exp;            // 現在の経験値
-    this.pAttack = pConf.attack;      // 確率設定
-    this.atkDope = atkDope;           // 攻撃力ドーピング
 
-    this.isSealed = false;
+    this.setHP();
+    this.setAtk();
+    this.setDef();
+    this.chp = this.mhp;
+  }
 
-    if (weakenAtk !== 0) { this.setAtk(); }
-    if (weakenDef !== 0) { this.setDef(); }
+  setHP(): void {
+    let mhp = getBasicMonsterStatus(this.name, this.lv).mhp0 + this.hpDope;
+    this.mhp = mhp;
   }
 
   setAtk(): void {
     // ステータス表示上の攻撃力を取得
     let atk = getBasicMonsterStatus(this.name, this.lv).atk0 + this.atkDope;
     // 弱化回数に応じて攻撃力を減らす
-    if (this.weakenAtk < 9) {
+    if (this.weakenAtk > 0) {
       // 弱化回数分だけ0.5倍する
       atk *= 0.5**this.weakenAtk;
-    } else if (this.weakenAtk === 9) {
+    }
+    if (this.weakenAtk === 9) {
       // 9回弱化されている場合は攻撃力0
       atk = 0;
     }
@@ -74,9 +74,7 @@ export class Unit {
     // ステータス表示上の防御力を取得
     let def = getBasicMonsterStatus(this.name, this.lv).def0;
     // 弱化回数に応じて防御力を減らす
-    if (this.weakenDef === 0 ) {
-      def *= 1;
-    } else if (this.weakenDef === 1) {
+    if (this.weakenDef === 1) {
       def *= 0.8;
     } else if (this.weakenDef === 2) {
       def *= 0.7;
@@ -88,90 +86,58 @@ export class Unit {
       def *= 0.2;
     } else if (this.weakenDef === 6) {
       def *= 0.001;
-    } else {
-      throw new Error("invalid input of weakenDef: " + this.weakenDef);
     }
     // 小数点以下を切り捨てる
-    def = Math.ceil(def);
+    def = Math.floor(def);
     this.def = def;
   }
 
-  attack(enemy: Unit): boolean {
+  attack(enemy: Unit, fixedDamage: number = 0): boolean {
     if (this.atk === 0) {
       return false
     }
-    if (Math.random() < this.pAttack) {
-      const damage = Math.ceil(this.atk) * 1.3 * Math.pow(35/36, enemy.def) * (448 + Math.floor(Math.random()*128))/512;
-      if (Math.round(damage) < 1.0) {
+    if (Math.random() < this.pConf.attack) {
+      const damage = fixedDamage === 0 ? (
+        Math.round(Math.ceil(this.atk) * 1.3 * Math.pow(35/36, enemy.def) * (Math.random()/4 + 7.0/8)) 
+      ) : fixedDamage;
+      if (damage < 1.0) {
         enemy.chp -= 1.0;
       } else {
-        enemy.chp -= Math.round(damage);
+        enemy.chp -= damage;
       }
       return true;
     } else {
       return false;
     }
   }
-
-  /**
-   * 与えるダメージ分布を連想配列として返す関数。
-   * scs内では使用していない。
-   * @param enemy 攻撃対象
-   * @returns ダメージ分布の連想配列
-   */
-  getDamagesDistribution(enemy: Unit): {[index: number]: number} {
-    let result: {[index: number]: number} = {};
-    for(let rand = 0; rand < 128; rand++) {
-      let damage = Math.round(Math.ceil(this.atk) * 1.3 * Math.pow(35/36, enemy.def) * (448 + rand)/512);
-      if (damage < 1.0) {
-        damage = 1.0
-      }
-      if (result[damage] === undefined) {
-        result[damage] = 1
-      } else {
-        result[damage] += 1;
-      }
-    }
-    return result;
+  
+  getMinAndMaxDamage(enemy: Unit): [number, number] {
+    let minDamage = Math.round(Math.ceil(this.atk) * 1.3 * Math.pow(35/36, enemy.def) * 7.0/8);
+    let maxDamage = Math.round(Math.ceil(this.atk) * 1.3 * Math.pow(35/36, enemy.def) * 9.0/8);
+    minDamage = minDamage === 0 ? 1 : minDamage;
+    maxDamage = maxDamage === 0 ? 1 : maxDamage;
+    return [minDamage, maxDamage];
   }
 }
 
 export class Friend extends Unit {
-  killCount = 0;
-  divisionLossCount = 0;
-  actionLossCount = 0;
-  hpDope: number;
-  doubleSpeed: boolean;
-  isSticked: boolean;
+  killCount:number = 0;
+  divisionLossCount:number = 0;
+  actionLossCount:number = 0;
+  readonly doubleSpeed: boolean;
+  readonly isSticked: boolean;
 
-  constructor(
-    name: string, 
-    lv: number, 
-    place: Place,
-    isSealed: boolean,
-    doubleSpeed: boolean, 
-    weakenAtk: number,
-    weakenDef: number, 
-    hpDope: number,
-    atkDope: number,
-    pConf: ProbabilityConfig,
-    isSticked: boolean = true) {
-      // name: string, lv: number, weakenAtk: number, weakenDef: number, atkDope:number, place: Place, pConf: ProbabilityConfig
-      super(name, lv, weakenAtk, weakenDef, atkDope, place, pConf);
-      this.isSealed = isSealed;
-      this.hpDope = hpDope;
-      this.doubleSpeed = doubleSpeed;
-      this.isSticked = isSticked;
-
-      this.mhp += hpDope;
-      this.atk += atkDope;
+  constructor(inp: SCSFriendInput, place: Place, pConf: ProbabilityConfig) {
+      super(inp, place, pConf);
+      this.doubleSpeed = inp.doubleSpeed !== undefined ? inp.doubleSpeed : false;
+      this.isSticked = inp.isSticked !== undefined ? inp.isSticked : true;
   }
 
-  getExp(exp=22): void {
+  getExp(exp:number = 22): void {
     this.killCount += 1;
     this.exp += exp;
 
-    while(getBasicMonsterStatus(this.name, this.lv).exp < this.exp) {
+    while(getBasicMonsterStatus(this.name, this.lv+1).exp < this.exp) {
       const status0 = getBasicMonsterStatus(this.name, this.lv);
       const status1 = getBasicMonsterStatus(this.name, this.lv+1);
 
@@ -183,6 +149,10 @@ export class Friend extends Unit {
     }
   }
 
+  getDamage(damage: number) {
+    this.chp -= damage;
+  }
+
   naturalRecovery(): void {
     this.chp += this.mhp / this.recovery;
     if (this.chp > this.mhp) {
@@ -192,13 +162,9 @@ export class Friend extends Unit {
 }
 
 export class Enemy extends Unit {
-  num: number;
+  readonly num: number;
   constructor(place: Place, num: number, pConf: ProbabilityConfig) {
-    // name: string, lv: number, weakenAtk: number, weakenDef: number, atkDope:number, place: Place, pConf: ProbabilityConfig
-    super("スモールグール", 1, 0, 0, 0, place, pConf);
+    super({ name: "スモールグール", lv: 1 }, place, pConf);
     this.num = num;
   }
-}
-export const createFriend = (name: string, lv: number, weakenAtk: number = 0) => {
-  return new Friend(name, lv, {row: -1, col: -1}, false, false, weakenAtk, 0, 0, 0, defaultProbabilityConf);
 }

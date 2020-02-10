@@ -1,7 +1,7 @@
 // interfaces.ts
 // 
 
-export interface SCSMapInput {
+export interface SCSFieldInput {
   row: number,
   col: number,
   data: number[],
@@ -10,12 +10,12 @@ export interface SCSMapInput {
 export interface SCSFriendInput {
   name: string,
   lv: number,
-  doubleSpeed: boolean,
-  hpDope: number,
+  doubleSpeed?: boolean,
+  hpDope?: number,
   atkDope?: number,
-  weakenAtk: number,
-  weakenDef: number,
-  isSealed: boolean,
+  weakenAtk?: number,
+  weakenDef?: number,
+  isSealed?: boolean,
   isSticked?: boolean,
 }
 
@@ -26,7 +26,7 @@ export interface SCSConfigInput {
 
 export interface SCSInput {
   friends: SCSFriendInput[],
-  map: SCSMapInput,
+  field: SCSFieldInput,
   config: SCSConfigInput,
 }
 
@@ -55,10 +55,76 @@ export interface Place {
 export interface ProbabilityConfig {
   attack: number,        // 通常攻撃があたる確率
   divide: number,        // スモールグールの分裂確率
-  kinoko: number,        // おばけキノコの特技使用率
-  hoimi: number,         // ホイミスライムの特技使用率
-  hoimiAttack: number,   // ホイミスライムの非封印時攻撃確率
-  hoimiMove: number,     // [半ホイミン用]ホイミスライムの移動確率
-  hoimiMoveTurn: number, // [半ホイミン用]ホイミスライムの移動開始ターン
-}
+  hoimin: {              // ホイミスライム
+    skill: number,       // 特技使用率
+    attack: number,      // ホイミスライムの非封印時攻撃確率
+    move: number,        // [半ホイミン用]ホイミスライムの移動確率
+    moveTurn: number,    // [半ホイミン用]ホイミスライムの移動開始ターン
+  }
+
+  // 隣接角抜けなし特技系
+  kinoko: {              // おばけキノコ
+    skill: number,
+  },
+  merumon: {             // メイジももんじゃ
+    skill: number,
+  },
+  mekira: {              // メイジキメラ
+    skill: number,
+  },
+  haeru: {               // ハエまどう
+    skill: number,
+  },
+  mister: {              // ミステリードール
+    skill: number,
+  },
+  isshi: {               // いしにんぎょう
+    skill: number,
+  },
+  flida: {               // フライングデビル
+    skill: number,
+  },
+  rangas: {              // ランガー
+    skill: number,
+  },
+
+  // 隣接角抜けあり特技系
+  lovelace: {
+    skill: number,
+  },
+  dragosu: {
+    skill: number
+  },
+  drataru: {
+    skill: number
+  },
+
+  // 視界影響なし直線上特技
+  lily: {
+    skill: number,
+    range: number,  // 射程
+  },
+  dog: {
+    skill: number,
+    range: number,  // 射程
+  },
+  drango: {
+    skill: number,
+    range: number
+  },
+
+  // さつじんきorエリミネーター
+  kororin: {
+    omoikkiri: number,
+    tsukon: number, 
+  },
+  emily: {
+    omoikkiri: number,
+    tsukon: number, 
+  },  
   
+  // 攻撃+特殊効果系
+  baburusu: {
+    skill: number,
+  },
+}

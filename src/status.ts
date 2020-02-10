@@ -1,5 +1,3 @@
-import { loadavg } from "os";
-
 // status.ts
 // モンスターステータス関連
 
@@ -320,7 +318,7 @@ export const getBasicMonsterStatus = (name: string, lv: number): BasicMonsterSta
 export const getLvByDexp = (name: string, startLv: number, dexp: number): number => {
   const msd0 = getBasicMonsterStatus(name, startLv);
   for(let lv = startLv+1; lv < 100; lv++) {
-    const msd1 = getBasicMonsterStatus(name, startLv+1);
+    const msd1 = getBasicMonsterStatus(name, lv);
     if (msd1.exp - msd0.exp > dexp) {
       return lv - 1;
     }

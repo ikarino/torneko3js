@@ -94,7 +94,7 @@ export const sampleInputs: {[index: string]: SCSInput } = {
         isSealed: false,
       },
     ],
-    map: {
+    field: {
       row: 10,
       col: 10,
       data: [
@@ -208,7 +208,7 @@ export const sampleInputs: {[index: string]: SCSInput } = {
         isSealed: false,
       },
     ],
-    map: {
+    field: {
       row: 10,
       col: 10,
       data: [
@@ -322,7 +322,7 @@ export const sampleInputs: {[index: string]: SCSInput } = {
         isSealed: false,
       },
     ],
-    map: {
+    field: {
       row: 10,
       col: 10,
       data: [
@@ -436,7 +436,7 @@ export const sampleInputs: {[index: string]: SCSInput } = {
         isSealed: false,
       },
     ],
-    map: {
+    field: {
       row: 10,
       col: 10,
       data: [

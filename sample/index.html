@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    h2 {
+      background-color: lightblue;
+    }
+    div {
+      background-color: azure;
+    }
+  </style>
+</head>
+<body>
+  <h2>入力</h2>
+  <div id="input"></div>
+  <h2>結果</h2>
+  <div id="result"></div>
+  <script src="../dist/torneko3.bundle.js"></script>
+  <script type="text/javascript">
+    console.log("hello torneko3");
+    var torneko3 = require('torneko3');
+    var inp = torneko3.sampleSCSInputs["4キラーマ倍速"];
+    var m = new torneko3.Manager(inp);
+    m.trial();
+    document.getElementById("input").innerText = JSON.stringify(inp, null , "　　");
+    document.getElementById("result").innerText = JSON.stringify(m.toJson(), null , "　　");
+  </script>
+</body>
+</html>
