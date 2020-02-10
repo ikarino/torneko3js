@@ -499,18 +499,16 @@ export class Manager {
     });
 
     // result
-    let result = true;
-    let reason = '';
-    let friendOrderKilled = -1;
+    let reason: string = 'success';
+    let orderOfKilledFriend: number = -1;
     if (this.turnNow < this.config.turn) {
-      result = false;
       if (this.enemys.length === 0) {
         reason = 'enemys are genocided';
       } else {
         reason = 'friends are killed';
         for (let order = 0; order < this.friends.length; order++) {
           if (this.friends[order].chp <= 0) {
-            friendOrderKilled = order;
+            orderOfKilledFriend = order;
             break;
           }
         }
@@ -519,9 +517,11 @@ export class Manager {
 
     this.killCount -= this.enemys.length;
     return {
-      result: result,
-      reason: reason,
-      friendOrderKilled: friendOrderKilled,
+      result: {
+        reason,
+        turnPassed: this.turnNow,
+        orderOfKilledFriend,
+      },
       exp: {
         total: this.killCount*22,
         perTurn: this.killCount*22/this.turnNow,
@@ -531,8 +531,7 @@ export class Manager {
       loss: {
         action: actionLossCount,
         division: divisionLossCount,
-      },
-      turnPassed: this.turnNow,
+      }
     };
   }
 

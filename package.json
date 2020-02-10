@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest",
     "tsc": "tsc",
-    "browser": "browserify -r ./src/index.ts:torneko3 -p [ tsify --noImplicitAny ] > dist/torneko3.bundle.js"
+    "browser": "browserify -r ./src/index.ts:torneko3 -p [ tsify --noImplicitAny ] > sample/torneko3.bundle.js"
   },
   "types": "dist/index.d.ts",
   "files": [

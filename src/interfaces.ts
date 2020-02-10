@@ -31,9 +31,11 @@ export interface SCSInput {
 }
 
 export interface SCSTrialOutput {
-  result: boolean,
-  reason: string,
-  friendOrderKilled: number,
+  result: {
+    reason: string,
+    turnPassed: number,
+    orderOfKilledFriend: number,
+  },
   exp: {
     total: number,
     perTurn: number,
@@ -44,7 +46,7 @@ export interface SCSTrialOutput {
     action: number[],
     division: number[],
   },
-  turnPassed: number,
+  
 }
 
 export interface Place {
