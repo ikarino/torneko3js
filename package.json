@@ -7,6 +7,7 @@
   "scripts": {
     "test": "jest",
     "tsc": "tsc",
+    "prepublishOnly": "npm run build",
     "browser": "browserify -r ./src/index.ts:torneko3 -p [ tsify --noImplicitAny ] > sample/torneko3.bundle.js"
   },
   "types": "dist/index.d.ts",

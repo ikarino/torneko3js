@@ -31,8 +31,14 @@ export class SCSField {
     return this.data[place.row][place.col];
   }
 
-  // TODO
-  // any[]は実際number[] or Place[] なのだけれど、うまく書く方法は無いのかな？
+  /**
+   * 周囲から特技等の対象や場所を探す
+   * TODO
+   * any[]は実際number[] or Place[] なのだけれど、うまく書く方法は無いのかな？
+   * @param place 対象を探すキャラの場所
+   * @param findEmpty true/false = 空白を探す/敵を探す
+   * @param includeKado 角抜け位置を含めるかどうか
+   */
   findTargets(place: Place, findEmpty=false, includeKado=false): any[] {
     const myNumber = this.getField(place);
     const rowMe = place.row;

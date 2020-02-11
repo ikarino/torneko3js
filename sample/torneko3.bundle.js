@@ -118,6 +118,9 @@ exports.defaultProbabilityConf = {
     haeru: {
         skill: 0.26,
     },
+    haneji: {
+        skill: 0.26,
+    },
     mister: {
         skill: 0.12,
     },
@@ -491,6 +494,10 @@ var Manager = /** @class */ (function () {
             return this.actionNormal(f);
         }
     };
+    Manager.prototype.removeEnemy = function (enemy) {
+        this.field.setField(enemy.place, 0);
+        this.enemys = this.enemys.filter(function (e) { return e !== enemy; });
+    };
     /**
      * 単純な殴り攻撃の実装
      * @param {Friend} friend 攻撃するFriend
@@ -504,8 +511,7 @@ var Manager = /** @class */ (function () {
         if (enemy.chp <= 0) {
             // 攻撃後に倒れた場合
             friend.getExp();
-            this.field.setField(enemy.place, 0);
-            this.enemys = this.enemys.filter(function (e) { return e !== enemy; });
+            this.removeEnemy(enemy);
             return 'killed';
         }
         else if (result) {
@@ -533,11 +539,11 @@ var Manager = /** @class */ (function () {
      * @param {Friend} f 隣接特技を持つキャラ
      */
     Manager.prototype.actionSkillAdjacent = function (f) {
-        // 角抜けが対象かどうかで対象を場合分け
+        // 特技の実施判定
         var wCorner = namesSkillAdjacentWCorner.includes(f.name);
-        var targets = this.field.findTargets(f.place, false, wCorner);
-        if (targets.length !== 0) {
-            var target = targets[randint(targets.length)];
+        var skillTargets = this.field.findTargets(f.place, false, wCorner);
+        if (skillTargets.length !== 0) {
+            var target = skillTargets[randint(skillTargets.length)];
             var enemy = this.getEnemyByNumber(target - 20);
             // 特技を使う場合
             switch (f.name) {
@@ -567,7 +573,7 @@ var Manager = /** @class */ (function () {
                     }
                     break;
                 case 'はねせんにん':
-                    if (Math.random() < this.pConf.haeru.skill) {
+                    if (Math.random() < this.pConf.haneji.skill) {
                         enemy.chp = Math.ceil(enemy.chp / 2);
                         return true;
                     }
@@ -610,26 +616,43 @@ var Manager = /** @class */ (function () {
                     break;
                 case 'スライムブレス':
                     if (Math.random() < f.pConf.lovelace.skill) {
-                        this.attack(f, enemy, 10);
+                        enemy.chp -= 10;
+                        if (enemy.chp <= 0) {
+                            f.getExp();
+                            this.removeEnemy(enemy);
+                        }
                         return true;
                     }
                     break;
                 case 'ドラゴスライム':
-                    if (Math.random() < f.pConf.lovelace.skill) {
-                        this.attack(f, enemy, 10);
+                    if (Math.random() < f.pConf.dragosu.skill) {
+                        enemy.chp -= 10;
+                        if (enemy.chp <= 0) {
+                            f.getExp();
+                            this.removeEnemy(enemy);
+                        }
                         return true;
                     }
                     break;
                 case 'ドラゴメタル':
-                    if (Math.random() < f.pConf.lovelace.skill) {
-                        this.attack(f, enemy, 20);
+                    if (Math.random() < f.pConf.drataru.skill) {
+                        enemy.chp -= 20;
+                        if (enemy.chp <= 0) {
+                            f.getExp();
+                            this.removeEnemy(enemy);
+                        }
                         return true;
                     }
                     break;
                 default:
                     throw new Error("skill not implemented: " + f.name);
             }
-            // 特技を使わなかったら攻撃する
+        }
+        // 通常攻撃の実施判定
+        var attackTargets = this.field.findTargets(f.place, false, false);
+        if (attackTargets.length !== 0) {
+            var target = attackTargets[randint(attackTargets.length)];
+            var enemy = this.getEnemyByNumber(target - 20);
             this.attack(f, enemy);
             return true;
         }
@@ -786,11 +809,9 @@ var Manager = /** @class */ (function () {
             return f.actionLossCount / _this.config.turn / turns;
         });
         // result
-        var result = true;
-        var reason = '';
-        var friendOrderKilled = -1;
+        var reason = 'success';
+        var orderOfKilledFriend = -1;
         if (this.turnNow < this.config.turn) {
-            result = false;
             if (this.enemys.length === 0) {
                 reason = 'enemys are genocided';
             }
@@ -798,7 +819,7 @@ var Manager = /** @class */ (function () {
                 reason = 'friends are killed';
                 for (var order = 0; order < this.friends.length; order++) {
                     if (this.friends[order].chp <= 0) {
-                        friendOrderKilled = order;
+                        orderOfKilledFriend = order;
                         break;
                     }
                 }
@@ -806,9 +827,11 @@ var Manager = /** @class */ (function () {
         }
         this.killCount -= this.enemys.length;
         return {
-            result: result,
-            reason: reason,
-            friendOrderKilled: friendOrderKilled,
+            result: {
+                reason: reason,
+                turnPassed: this.turnNow,
+                orderOfKilledFriend: orderOfKilledFriend,
+            },
             exp: {
                 total: this.killCount * 22,
                 perTurn: this.killCount * 22 / this.turnNow,
@@ -818,8 +841,7 @@ var Manager = /** @class */ (function () {
             loss: {
                 action: actionLossCount,
                 division: divisionLossCount,
-            },
-            turnPassed: this.turnNow,
+            }
         };
     };
     return Manager;

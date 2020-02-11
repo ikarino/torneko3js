@@ -242,6 +242,15 @@ export class Manager {
   }
 
   /**
+   * 倒れたスモグルをfieldとenemysから取り除く
+   * @param enemy 取り除くスモグル
+   */
+  removeEnemy(enemy: Enemy) {
+    this.field.setField(enemy.place, 0);
+    this.enemys = this.enemys.filter(e => e !== enemy);
+  }
+
+  /**
    * 単純な殴り攻撃の実装
    * @param {Friend} friend 攻撃するFriend
    * @param {Enemy} enemy 攻撃されるスモグル
@@ -254,8 +263,7 @@ export class Manager {
     if (enemy.chp <= 0) {
       // 攻撃後に倒れた場合
       friend.getExp();
-      this.field.setField(enemy.place, 0);
-      this.enemys = this.enemys.filter(e => e !== enemy);
+      this.removeEnemy(enemy);
       return 'killed';
     } else if (result) {
       // 攻撃後に生き残った場合（分裂処理）
@@ -267,7 +275,10 @@ export class Manager {
     }
     return 'missed';
   }
-
+  /**
+   * 通常攻撃の行動
+   * @param {Friend} f 仲間
+   */
   actionNormal(f: Friend): boolean {
     const targets = this.field.findTargets(f.place);
     if (targets.length !== 0) {
@@ -284,11 +295,11 @@ export class Manager {
    * @param {Friend} f 隣接特技を持つキャラ
    */
   actionSkillAdjacent(f: Friend): boolean {
-    // 角抜けが対象かどうかで対象を場合分け
+    // 特技の実施判定
     const wCorner = namesSkillAdjacentWCorner.includes(f.name);
-    const targets = this.field.findTargets(f.place, false, wCorner);
-    if (targets.length !== 0) {
-      const target = targets[randint(targets.length)];
+    const skillTargets = this.field.findTargets(f.place, false, wCorner);
+    if (skillTargets.length !== 0) {
+      const target = skillTargets[randint(skillTargets.length)];
       const enemy = this.getEnemyByNumber(target - 20);
 
       // 特技を使う場合
@@ -319,7 +330,7 @@ export class Manager {
           }
           break;
         case 'はねせんにん':
-          if (Math.random() < this.pConf.haeru.skill ) {
+          if (Math.random() < this.pConf.haneji.skill ) {
             enemy.chp = Math.ceil(enemy.chp/2);
             return true;
           }
@@ -360,27 +371,44 @@ export class Manager {
           break;
         case 'スライムブレス':
           if (Math.random() < f.pConf.lovelace.skill) {
-            this.attack(f, enemy, 10);
+            enemy.chp -= 10;
+            if (enemy.chp <= 0) {
+              f.getExp();
+              this.removeEnemy(enemy);
+            } 
             return true;
           }
           break;
         case 'ドラゴスライム':
-          if (Math.random() < f.pConf.lovelace.skill) {
-            this.attack(f, enemy, 10);
+          if (Math.random() < f.pConf.dragosu.skill) {
+            enemy.chp -= 10;
+            if (enemy.chp <= 0) {
+              f.getExp();
+              this.removeEnemy(enemy);
+            } 
             return true;
           }
           break
         case 'ドラゴメタル':
-          if (Math.random() < f.pConf.lovelace.skill) {
-            this.attack(f, enemy, 20);
+          if (Math.random() < f.pConf.drataru.skill) {
+            enemy.chp -= 20;
+            if (enemy.chp <= 0) {
+              f.getExp();
+              this.removeEnemy(enemy);
+            } 
             return true;
           }
           break
         default:
           throw new Error("skill not implemented: "+ f.name);
       }
+    }
 
-      // 特技を使わなかったら攻撃する
+    // 通常攻撃の実施判定
+    const attackTargets = this.field.findTargets(f.place, false, false);
+    if (attackTargets.length !== 0) {
+      const target = attackTargets[randint(attackTargets.length)];
+      const enemy = this.getEnemyByNumber(target - 20);
       this.attack(f, enemy);
 
       return true;

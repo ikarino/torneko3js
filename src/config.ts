@@ -21,6 +21,9 @@ export const defaultProbabilityConf = {
   haeru: {
     skill: 0.26,
   },
+  haneji: {
+    skill: 0.26,  // 出典なし
+  },  
   mister: {
     skill: 0.12,
   },

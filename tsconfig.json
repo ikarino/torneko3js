@@ -8,6 +8,7 @@
     "outDir": "./dist/",
     "declaration": true,
     "sourceMap": true,
+    "newLine": "lf",
     "downlevelIteration": true
   },
   "include": [

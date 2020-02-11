@@ -3,7 +3,6 @@
 
 import { getBasicMonsterStatus } from "./status";
 import { SCSFriendInput, Place, ProbabilityConfig } from './interfaces';
-import { defaultProbabilityConf } from "./config";
 
 export class Unit {
   readonly name: string;
@@ -136,7 +135,8 @@ export class Friend extends Unit {
   getExp(exp:number = 22): void {
     this.killCount += 1;
     this.exp += exp;
-
+    
+    // レベルアップ処理
     while(getBasicMonsterStatus(this.name, this.lv+1).exp < this.exp) {
       const status0 = getBasicMonsterStatus(this.name, this.lv);
       const status1 = getBasicMonsterStatus(this.name, this.lv+1);

@@ -77,6 +77,9 @@ export interface ProbabilityConfig {
   haeru: {               // ハエまどう
     skill: number,
   },
+  haneji: {               // はねせんにん
+    skill: number,
+  },
   mister: {              // ミステリードール
     skill: number,
   },
