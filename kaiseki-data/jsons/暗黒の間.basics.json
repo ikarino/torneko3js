@@ -1,0 +1,28 @@
+[
+    {
+        "cursed": "0.0",
+        "fake": "0.0",
+        "floor": "1",
+        "goldMax": "1",
+        "goldMin": "0",
+        "item": "4",
+        "itemInWall": "0",
+        "monster": "5",
+        "shop": "0.0",
+        "trap": "0",
+        "treasure": "0"
+    },
+    {
+        "cursed": "0.0",
+        "fake": "0.0",
+        "floor": "2",
+        "goldMax": "500",
+        "goldMin": "250",
+        "item": "0",
+        "itemInWall": "0",
+        "monster": "0",
+        "shop": "0.0",
+        "trap": "0",
+        "treasure": "103"
+    }
+]
