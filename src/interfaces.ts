@@ -54,6 +54,37 @@ export interface Place {
   col: number,
 }
 
+interface KaisekiDataItem {
+  items: {[index: string]: number},
+  probability: number,
+}
+interface KaisekiDataBasic {
+  cursed: number,
+  fake: number,
+  floor: number,
+  goldMax: number,
+  goldMin: number,
+  house: number,
+  item: number,
+  itemInWall: number,
+  monster: number,
+  pattern: number,
+  shop: number,
+  trap: number,
+  treasure: number
+}
+
+export interface KaisekiDataFloor {
+  basic: KaisekiDataBasic,
+  floor: {[category: string]: KaisekiDataItem},
+  wall: {[category: string]: KaisekiDataItem},
+  monoka: {[category: string]: KaisekiDataItem},
+  shop: {[category: string]: KaisekiDataItem},
+  changePot: {[category: string]: KaisekiDataItem},
+  monster: {[name: string]: number[]},
+  trap: {[name: string]: number}
+}
+
 export interface ProbabilityConfig {
   attack: number,        // 通常攻撃があたる確率
   divide: number,        // スモールグールの分裂確率

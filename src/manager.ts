@@ -4,7 +4,12 @@
 import { Unit, Friend, Enemy } from './unit';
 import { SCSField } from './scsField';
 import { Place, SCSInput, ProbabilityConfig, SCSConfigInput, SCSFieldInput, SCSTrialOutput } from './interfaces';
-import { defaultProbabilityConf } from './config';
+import { 
+  defaultProbabilityConf,
+  monstersSkillAdjacent,
+  monstersSkillAdjacentWCorner,
+  monstersSkillAdjacentWOCorner
+} from './config';
 import checkInp from './checkInp';
 
 /**
@@ -21,24 +26,6 @@ const addPlace = (place1: Place, place2: Place): Place => {
     col: place1.col + place2.col
   }
 };
-
-const namesSkillAdjacentWOCorner: string[] = [
-  'おばけキノコ',
-  'メイジももんじゃ',
-  'メイジキメラ',
-  'ハエまどう',
-  'はねせんにん',
-  'フライングデビル',
-  'ランガー',
-  'ミステリードール',
-  'いしにんぎょう'
-];
-const namesSkillAdjacentWCorner: string[] = [
-  'スライムブレス',
-  'ドラゴスライム',
-  'ドラゴメタル'
-];
-const namesSkillAdjacent = namesSkillAdjacentWOCorner.concat(namesSkillAdjacentWCorner);
   
 export class Manager {
   inp: SCSInput;
@@ -234,7 +221,7 @@ export class Manager {
       return this.actionKillerMachine(f);
     } else if (f.name === 'ホイミスライム') {
       return this.actionHoimiSlime(f);
-    } else if (namesSkillAdjacent.includes(f.name)) {
+    } else if (monstersSkillAdjacent.includes(f.name)) {
       return this.actionSkillAdjacent(f);
     } else {
       return this.actionNormal(f);
@@ -296,7 +283,7 @@ export class Manager {
    */
   actionSkillAdjacent(f: Friend): boolean {
     // 特技の実施判定
-    const wCorner = namesSkillAdjacentWCorner.includes(f.name);
+    const wCorner = monstersSkillAdjacentWCorner.includes(f.name);
     const skillTargets = this.field.findTargets(f.place, false, wCorner);
     if (skillTargets.length !== 0) {
       const target = skillTargets[randint(skillTargets.length)];

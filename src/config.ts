@@ -77,3 +77,22 @@ export const defaultProbabilityConf = {
     skill: 0.5,
   },
 }
+
+
+export const monstersSkillAdjacentWOCorner: string[] = [
+  'おばけキノコ',
+  'メイジももんじゃ',
+  'メイジキメラ',
+  'ハエまどう',
+  'はねせんにん',
+  'フライングデビル',
+  'ランガー',
+  'ミステリードール',
+  'いしにんぎょう'
+];
+export const monstersSkillAdjacentWCorner: string[] = [
+  'スライムブレス',
+  'ドラゴスライム',
+  'ドラゴメタル'
+];
+export const monstersSkillAdjacent = monstersSkillAdjacentWOCorner.concat(monstersSkillAdjacentWCorner);
