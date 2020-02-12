@@ -34,7 +34,7 @@ export interface SCSTrialOutput {
   result: {
     reason: string,
     turnPassed: number,
-    orderOfKilledFriend: number,
+    orderOfKilledFriends: number[],
   },
   exp: {
     total: number,

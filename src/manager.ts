@@ -67,7 +67,7 @@ export class Manager {
         row: Math.floor(FieldIndex/this.inp.field.col),
         col: FieldIndex%this.inp.field.col
       };
-      this.friends.push(new Friend(friend, place, this.pConf));
+      this.friends.push(new Friend(friend, order, place, this.pConf));
     }
   
     // Enemyの読み込み
@@ -482,6 +482,7 @@ export class Manager {
 
     // 5.
     const vacantTargets = this.field.findTargets(f.place, true, false);
+    returnValue = returnValue || !!vacantTargets.length;
     if (
       !f.isSticked &&                            // ここで待っててではない
       Math.random() < this.pConf.hoimin.move &&    // 移動確率
@@ -495,7 +496,7 @@ export class Manager {
         f.place = newPlace;
         // TODO
         // 移動は「待ち」でなかったと判断すべきだろうか。
-        return true;
+        return returnValue;
     }
 
     return returnValue;
@@ -504,7 +505,7 @@ export class Manager {
   toJson(): SCSTrialOutput {
     // exp/monster
     let expPerMonster = this.friends.map(f => f.killCount*22);
-    let expPerMonsterPer_turn = this.friends.map(f => f.killCount*22/this.config.turn);
+    let expPerMonsterPerTurn = this.friends.map(f => f.killCount*22/this.config.turn);
 
     // loss counts
     let divisionLossCount = this.friends.map(f => f.divisionLossCount/this.config.turn);
@@ -515,18 +516,13 @@ export class Manager {
 
     // result
     let reason: string = 'success';
-    let orderOfKilledFriend: number = -1;
+    let orderOfKilledFriends: number[] = [];
     if (this.turnNow < this.config.turn) {
       if (this.enemys.length === 0) {
         reason = 'enemys are genocided';
       } else {
         reason = 'friends are killed';
-        for (let order = 0; order < this.friends.length; order++) {
-          if (this.friends[order].chp <= 0) {
-            orderOfKilledFriend = order;
-            break;
-          }
-        }
+        orderOfKilledFriends = this.friends.filter(f => f.chp < 0).map(f => f.order);
       }
     }
 
@@ -535,13 +531,13 @@ export class Manager {
       result: {
         reason,
         turnPassed: this.turnNow,
-        orderOfKilledFriend,
+        orderOfKilledFriends,
       },
       exp: {
         total: this.killCount*22,
         perTurn: this.killCount*22/this.turnNow,
         perMonster: expPerMonster,                
-        perMonsterPerTurn: expPerMonsterPer_turn,
+        perMonsterPerTurn: expPerMonsterPerTurn,
       },
       loss: {
         action: actionLossCount,

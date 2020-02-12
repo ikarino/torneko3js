@@ -25,8 +25,7 @@ export class Unit {
   isBline: boolean;
    */
   place: Place;
-  pConf: ProbabilityConfig;
-  constructor(inp: SCSFriendInput, place: Place, pConf: ProbabilityConfig) {
+  constructor(inp: SCSFriendInput, place: Place, readonly pConf: ProbabilityConfig) {
     this.name = inp.name;                                // モンスター名
     this.lv = inp.lv;                                    // Lv
     this.weakenAtk = inp.weakenAtk ? inp.weakenAtk : 0;  // 攻撃力弱化回数
@@ -35,7 +34,6 @@ export class Unit {
     this.hpDope = inp.hpDope ? inp.hpDope : 0;           // HPドーピング
     this.isSealed = inp.isSealed !== undefined ? inp.isSealed : false; // 封印状態
     this.place = place;                                  // 位置座標[row, col]
-    this.pConf = pConf;                                  // 確率設定
 
     const status = getBasicMonsterStatus(inp.name, inp.lv);
     this.recovery = status.recovery;  // 回復定数
@@ -120,14 +118,16 @@ export class Unit {
 }
 
 export class Friend extends Unit {
+  order: number;
   killCount:number = 0;
   divisionLossCount:number = 0;
   actionLossCount:number = 0;
   readonly doubleSpeed: boolean;
   readonly isSticked: boolean;
 
-  constructor(inp: SCSFriendInput, place: Place, pConf: ProbabilityConfig) {
+  constructor(inp: SCSFriendInput, order: number, place: Place, pConf: ProbabilityConfig) {
       super(inp, place, pConf);
+      this.order = order;
       this.doubleSpeed = inp.doubleSpeed !== undefined ? inp.doubleSpeed : false;
       this.isSticked = inp.isSticked !== undefined ? inp.isSticked : true;
   }

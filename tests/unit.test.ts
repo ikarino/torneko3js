@@ -8,6 +8,7 @@ describe('status', (): void => {
         name: 'キラーマシン',
         lv: 13,
       },
+      0,
       {
         row: 0,
         col: 0,
@@ -31,6 +32,7 @@ describe('status', (): void => {
         lv: 13,
         weakenAtk: 6
       },
+      0,
       {
         row: 0,
         col: 0,
@@ -50,6 +52,7 @@ describe('status', (): void => {
         hpDope: 5,
         atkDope: 15,
       },
+      0,
       {
         row: 0,
         col: 0,
@@ -73,6 +76,7 @@ describe('status', (): void => {
         lv: 13,
         weakenAtk: 9
       },
+      0,
       {
         row: 0,
         col: 0,
@@ -91,6 +95,7 @@ describe('status', (): void => {
         name: 'キラーマシン',
         lv: 13,
       },
+      0,
       {
         row: 0,
         col: 0,
@@ -118,6 +123,7 @@ describe('status', (): void => {
         name: 'キラーマシン',
         lv: 1,
       },
+      0,
       {
         row: 0,
         col: 0,
