@@ -138,7 +138,7 @@ console.log(m.toJson());
 ### result
 |出力|詳細|
 |:---:|:---|
-|reason|終了理由。無事終了／仲間死亡／敵スモ消滅|
+|finishState|終状態。無事終了／仲間死亡／敵スモ消滅|
 |turnPassed|終了時経過ターン数|
 |orderOfKilledFriends|死亡した仲間（達）の行動順|
 

@@ -33,7 +33,7 @@ export interface SCSInput {
 
 export interface SCSTrialOutput {
   result: {
-    reason: string,
+    finishState: string,
     turnPassed: number,
     orderOfKilledFriends: number[],
   },
@@ -51,7 +51,7 @@ export interface SCSTrialOutput {
 
 export interface SCSSummarizedOutput {
   result: {
-    reason: {
+    finishState: {
       success: number,
       killed: number,
       genocided: number,

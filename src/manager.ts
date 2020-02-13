@@ -516,13 +516,13 @@ export class Manager {
     });
 
     // result
-    let reason: string = 'success';
+    let finishState: string = 'success';
     let orderOfKilledFriends: number[] = [];
     if (this.turnNow < this.config.turn) {
       if (this.enemys.length === 0) {
-        reason = 'enemys are genocided';
+        finishState = 'genocided';
       } else {
-        reason = 'friends are killed';
+        finishState = 'killed';
         orderOfKilledFriends = this.friends.filter(f => f.chp < 0).map(f => f.order);
       }
     }
@@ -530,7 +530,7 @@ export class Manager {
     this.killCount -= this.enemys.length;
     return {
       result: {
-        reason,
+        finishState,
         turnPassed: this.turnNow,
         orderOfKilledFriends,
       },
@@ -560,10 +560,10 @@ export class Manager {
 
     return {
       result: {
-        reason: {
-          success: this.trialOutputs.filter(o => o.result.reason === 'success').length,
-          killed: this.trialOutputs.filter(o => o.result.reason === 'friends are killed').length,
-          genocided: this.trialOutputs.filter(o => o.result.reason === 'enemys are genocided').length,
+        finishState: {
+          success: this.trialOutputs.filter(o => o.result.finishState === 'success').length,
+          killed: this.trialOutputs.filter(o => o.result.finishState === 'killed').length,
+          genocided: this.trialOutputs.filter(o => o.result.finishState === 'genocided').length,
         },
         turnPassed: {
           mean: mean(this.trialOutputs.map(o => o.result.turnPassed)),
