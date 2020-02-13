@@ -1,6 +1,11 @@
 from glob import glob
 import os
 import json
+import sys
+
+DESTINATION = "../src/kaisekiData.ts"
+if len(sys.argv) == 2:
+  DESTINATION = sys.argv[1]
 
 def json2dict(fname):
   with open(fname) as f:
@@ -37,7 +42,7 @@ for dname in glob("jsons/*"):
 
   whole_dict[dungeon] = byFloor
 
-with open("../src/kaisekiData.ts", "w", encoding="utf-8") as f:
+with open(DESTINATION, "w", encoding="utf-8") as f:
   f.write('''import { KaisekiDataFloor } from './interfaces';
 export const kaisekiData: { [dugeon: string]: KaisekiDataFloor[] } = ''')
   f.write(json.dumps(whole_dict, ensure_ascii=False, indent=2, sort_keys=True, separators=(',', ': ')))

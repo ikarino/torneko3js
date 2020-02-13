@@ -1,24 +1,29 @@
 # torneko3js
-PS2ゲーム「トルネコ3」のJavaScriptライブラリです。
+PS2ゲーム「トルネコ3」のJavaScriptライブラリです。  
+TypeScriptで開発しています。
 
-このライブラリは[scs](https://github.com/ikarino/scs)の移植が中心ですが、
-モンスターの能力値を計算する等の機能を備えています。
+- [scs](https://github.com/ikarino/scs)の移植
+- モンスターの能力値計算
+- 行動順補助用の関数
+- 解析データ
 
 ## インストール
 
 ### Nodejsの場合
-```
+```shell
 npm install --save torneko3js
+# or
+yarn add torneko3js
 ```
 
 ### ブラウザの場合
-[sample/index.html](https://github.com/ikarino/torneko3js/blob/master/sample/index.html)を参照してください。
-[browserify](http://browserify.org/)でbundle化したものがあります。
+[sample/browser](https://github.com/ikarino/torneko3js/blob/master/sample/browser)を参照してください。  
+[browserify](http://browserify.org/)でbundle化しています。
 
 ### google spreadsheetの場合
-調べています。
+調べています。[clasp](https://github.com/google/clasp)を使うっぽい？
 
-## 使い方の例(javascript, typescript)
+## 使用例(JavaScript, TypeScript)
 ```js
 import { Manager, sampleSCSInputs } from 'torneko3js';
 
@@ -33,6 +38,8 @@ console.log(m.toJson());
 - [x] scs移植
 - [x] kompotaさんの分裂方向
 - [x] はぐれ状態ホイミン
+- [x] 行動順補助用の関数
+- [x] 解析データ
 
 ### 特技
 確率が判明していないものも多いので、おいおい実装します。
@@ -75,11 +82,6 @@ console.log(m.toJson());
 - [x] カニ系や魔法無効化系はスモコン／ブラコンに影響しないので実装しない
 - [x] ゾンビ系のホイミは確実に倒れるので実装しない
 
-
-### その他
-- [x] 行動順補助用の関数
-- [x] 解析データ
-
 ### ホイミンの行動モデル
 
 1. 周囲の傷ついたキャラの数を取得
@@ -91,10 +93,11 @@ console.log(m.toJson());
 
 ## 入力の構成
 入力はJSON形式です。  
+詳細は[src/interfaces.ts](https://github.com/ikarino/torneko3js/blob/master/src/interfaces.ts)を参照してください。  
 以下の3つのパートに分かれています。
 - friends: 仲間の情報（種類・レベル・弱化状態等）
 - field: 仲間・壁・種スモの配置を表すフィールド
-- config: 試行回数と試行ターン数
+- config: 試行回数と試行ターン数、確率設定
 
 ### friends
 以下の項目を行動順に合わせて10匹分入力します。
@@ -122,9 +125,11 @@ console.log(m.toJson());
 |:---:|:---:|:---|
 |trial|必須|試行回数|
 |turn|必須|試行ターン数|
+|pconf|オプション|確率設定|
 
 ## 出力の構成
 1試行あたりの出力もJSON形式です。  
+詳細は[src/interfaces.ts](https://github.com/ikarino/torneko3js/blob/master/src/interfaces.ts)を参照してください。  
 以下の3つのパートに分かれています。
 - result: 終了理由、経過ターン数等
 - exp: 経験値関係
@@ -135,7 +140,7 @@ console.log(m.toJson());
 |:---:|:---|
 |reason|終了理由。無事終了／仲間死亡／敵スモ消滅|
 |turnPassed|終了時経過ターン数|
-|orderOfFriendKilled|死亡した仲間の行動順|
+|orderOfKilledFriends|死亡した仲間（達）の行動順|
 
 ### exp
 |出力|詳細|

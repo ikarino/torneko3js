@@ -25,6 +25,14 @@ describe('status', (): void => {
     expect(m.recovery).toBe(50);
     expect(m.exp).toBe(42000);
   });
+  test('getBasicMonsterStatus: さそりかまきりLv1の能力値確認', (): void => {
+    const m = getBasicMonsterStatus('さそりかまきり', 1);
+    expect(m.mhp0).toBe(15);
+    expect(m.atk0).toBe(11);
+    expect(m.def0).toBe(10);
+    expect(m.recovery).toBe(100);
+    expect(m.exp).toBe(0);
+  });
   
   test('getLvByDexp: 防御晩成は経験値1万でLv10になる', (): void => {
     const newLv = getLvByDexp('キラーマシン', 1, 10000);

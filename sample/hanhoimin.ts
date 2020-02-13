@@ -2,101 +2,12 @@
  * 半ホイミンの実行サンプル
  */
 
-import { Manager } from '../dist/index';
-const inp = {
-    friends: [
-      {
-        name: "キラーマシン",
-        lv: 18,
-        doubleSpeed: false,
-        hpDope: 0,
-        weakenAtk: 6,
-        weakenDef: 0,
-        isSealed: false,
-      },
-      {
-        name: "キラーマシン",
-        lv: 18,
-        doubleSpeed: false,
-        hpDope: 0,
-        weakenAtk: 6,
-        weakenDef: 0,
-        isSealed: false,
-      },
-      {
-        name: "キラーマシン",
-        lv: 18,
-        doubleSpeed: false,
-        hpDope: 0,
-        weakenAtk: 6,
-        weakenDef: 0,
-        isSealed: false,
-      },
-      {
-        name: "キラーマシン",
-        lv: 18,
-        doubleSpeed: false,
-        hpDope: 0,
-        weakenAtk: 6,
-        weakenDef: 0,
-        isSealed: false,
-      },
-      {
-        name: "キラーマシン",
-        lv: 18,
-        doubleSpeed: false,
-        hpDope: 0,
-        weakenAtk: 6,
-        weakenDef: 0,
-        isSealed: false,
-      },
-      {
-        name: "ホイミスライム",
-        lv: 30,
-        doubleSpeed: false,
-        hpDope: 0,
-        weakenAtk: 0,
-        weakenDef: 0,
-        isSealed: false,
-        isSticked: false,
-      },
-      {
-        name: "キラーマシン",
-        lv: 13,
-        doubleSpeed: false,
-        hpDope: 0,
-        weakenAtk: 0,
-        weakenDef: 0,
-        isSealed: false,
-      },
-      {
-        name: "キラーマシン",
-        lv: 13,
-        doubleSpeed: false,
-        hpDope: 0,
-        weakenAtk: 0,
-        weakenDef: 0,
-        isSealed: false,
-      },
-      {
-        name: "スモールグール",
-        lv: 30,
-        doubleSpeed: false,
-        hpDope: 0,
-        weakenAtk: 0,
-        weakenDef: 0,
-        isSealed: false,
-      },
-      {
-        name: "キラーマシン",
-        lv: 30,
-        doubleSpeed: false,
-        hpDope: 0,
-        weakenAtk: 0,
-        weakenDef: 0,
-        isSealed: false,
-      },
-    ],
+import { Manager } from '../src/manager';
+import { defaultProbabilityConf as pConf } from '../src/config';
+import { SCSFriendInput, SCSInput } from '../src/interfaces';
+
+const inp: SCSInput = {
+    friends: [],
     field: {
       row: 10,
       col: 10,
@@ -107,7 +18,7 @@ const inp = {
         1,  1, 10, 11, 12, 13, 14,  1,  1,  1,
         1,  1,  9,  9,  9,  9,  9,  0,  1,  1,
         1,  1,  0,  0,  0,  0,  0,  1,  1,  1,
-        1,  1, 19, 16, 17, 18,  1,  1,  1,  1,
+        1,  1, 16, 17, 18, 19,  1,  1,  1,  1,
         1,  1,  0,  0,  0,  0,  1,  1,  1,  1,
         1,  1,  0,  0,  0,  0,  1,  1,  1,  1,
         1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
@@ -115,48 +26,53 @@ const inp = {
     },
     config: {
       turn: 1500,
-      trial: 100,
+      trial: 1000,
     }
 };
 
-// 確率設定
-const probabilityConf = {
-  attack: 0.92,
-  divide: 0.25,
-  kinoko: 0.10,
-  hoimi: 0.3553, // kompota君の成果
-  hoimiAttack: 0.30,
-  hoimiMove: 1.00,
-  hoimiMoveTurn: 80,
+let friends: SCSFriendInput[] = [];
+for (let i = 0; i < 5; i++) {
+  friends.push({
+      name: "キラーマシン",
+      lv: 18,
+      weakenAtk: 6,
+  });
 }
+friends.push({
+  name: "ホイミスライム",
+  lv: 30,
+  isSticked: false
+});
+
+for (let i = 0; i < 4; i++) {
+  friends.push({
+      name: "キラーマシン",
+      lv: 30,
+  });
+}
+
 // ホイミン倍速
-inp.friends[5].doubleSpeed = true;
+friends[5].doubleSpeed = true;
+inp.friends = friends;
 
-
-
-const testFunc = () => {
-  const m = new Manager(inp, probabilityConf);
-  let count = 0;
-  for (let i = 0; i < 100; i++ ) {
-    m.trial();
-    const j = m.toJson();
-  
-    if (j.reason === "friends are killed") {
-      count += 1;
-    }
-    console.log(j.exp.perTurn);
-  }
-  return count;
+const testFunc = (testInp: SCSInput) => {
+  const m = new Manager(testInp);
+  m.runAllTrial();
+  return m.summarizeOutputs();
 }
-testFunc()
-/*
+
 for (let hoimiMove = 0.2; hoimiMove <= 1.0; hoimiMove += 0.1) {
-  for (let hoimiMoveTurn = 30; hoimiMoveTurn < 100; hoimiMoveTurn += 10) {
-    probabilityConf.hoimiMove = hoimiMoveTurn;
-    probabilityConf.hoimiMoveTurn = hoimiMoveTurn;
-    const count = testFunc();
-    console.log(hoimiMove, hoimiMoveTurn, count);
+  for (let hoimiMoveTurn = 100; hoimiMoveTurn >= 0; hoimiMoveTurn -= 10) {
+    pConf.hoimin.move = hoimiMove;
+    pConf.hoimin.moveTurn = hoimiMoveTurn;
+    inp.config.pConf = pConf;
+    const out = testFunc(inp);
+    console.log("移動確率: ", hoimiMove);
+    console.log("移動開始ターン: ", hoimiMoveTurn);
+    console.log(out)
+    if (out.result.reason.killed === 0) {
+      break;
+    }
   }
 }
-*/
 

@@ -6,7 +6,7 @@ import { SCSInput, SCSFriendInput } from "./interfaces"
 const checkInp = (inp: SCSInput): void => {
   // friends
   if (inp.friends.length !== 10) {
-    throw new Error("invalid length of friends !");
+    throw new Error("invalid length of friends");
   }
   for (const f of inp.friends) {
     checkFriend(f);

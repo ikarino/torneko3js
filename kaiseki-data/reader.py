@@ -126,16 +126,16 @@ def read_monsters(fname):
         f.write(json.dumps(caps, ensure_ascii=False, indent=4, sort_keys=True, separators=(',', ': ')))
 
 if __name__ == "__main__":
-    for pot in glob("解析データ/*フロア.html"):
-        read_items(pot, "floor")
-    for pot in glob("解析データ/*モノカの杖.html"):
-        read_items(pot, "monoka")
-    for pot in glob("解析データ/*店.html"):
-        read_items(pot, "shop")
-    for pot in glob("解析データ/*壁の中.html"):
-        read_items(pot, "wall")
-    for pot in glob("解析データ/*変化の壷.html"):
-        read_items(pot, "changePot")
+    for f in glob("解析データ/*フロア.html"):
+        read_items(f, "floor")
+    for f in glob("解析データ/*モノカの杖.html"):
+        read_items(f, "monoka")
+    for f in glob("解析データ/*店.html"):
+        read_items(f, "shop")
+    for f in glob("解析データ/*壁の中.html"):
+        read_items(f, "wall")
+    for f in glob("解析データ/*変化の壷.html"):
+        read_items(f, "changePot")
     for trap in glob("解析データ/*罠一覧.html"):
         read_traps(trap)
     for monster in glob("解析データ/*敵一覧.html"):

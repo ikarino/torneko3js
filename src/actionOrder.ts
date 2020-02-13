@@ -11,7 +11,7 @@ const colWeight = (col: number): number => {
   }
 }
 
-const createPalceList = (lap: number): Place[] => {
+export const createPlaceList = (lap: number): Place[] => {
   let list: Place[] = [];
   for(let col = -lap; col <= lap; col++) {
     for(let row = -lap; row <= lap; row++) {
@@ -41,8 +41,8 @@ const createPalceList = (lap: number): Place[] => {
   });
 }
 
-const viewer = (lap: number) => {
-  const list = createPalceList(lap);
+export const viewer = (lap: number): string => {
+  const list = createPlaceList(lap);
   let log = "";
   for(let row = -lap; row <= lap; row++) {
     for(let col = -lap; col <= lap; col++) {
@@ -55,7 +55,7 @@ const viewer = (lap: number) => {
     }
     log += "\n";
   }
-  console.log(log);
+  return log;
 }
 // ここまでplaceOrderを作成するための関数
 

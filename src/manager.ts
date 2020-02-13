@@ -3,7 +3,7 @@
 
 import { Unit, Friend, Enemy } from './unit';
 import { SCSField } from './scsField';
-import { Place, SCSInput, ProbabilityConfig, SCSConfigInput, SCSFieldInput, SCSTrialOutput } from './interfaces';
+import { Place, SCSInput, ProbabilityConfig, SCSConfigInput, SCSSummarizedOutput, SCSTrialOutput } from './interfaces';
 import { 
   defaultProbabilityConf,
   monstersSkillAdjacent,
@@ -11,6 +11,7 @@ import {
   monstersSkillAdjacentWOCorner
 } from './config';
 import checkInp from './checkInp';
+import { mean, std, getMeanAndStdFromArray } from './mathFunctions';
 
 /**
  * 0～N-1のランダムな整数を返す。
@@ -37,17 +38,17 @@ export class Manager {
   turnNow: number = 0;
   field: SCSField = new SCSField({row: 0, col: 0, data: []});
   trialOutputs: SCSTrialOutput[];
-  constructor(inp: SCSInput, pConf: ProbabilityConfig = defaultProbabilityConf) {
+  constructor(inp: SCSInput) {
     checkInp(inp);
     this.inp = inp;
-    this.pConf = pConf;
+    this.pConf = inp.config.pConf ? inp.config.pConf : defaultProbabilityConf;
     this.config = this.inp.config;
     this.trialOutputs = [];
 
     this.init();
   }
 
-  init(): void {
+  private init(): void {
     this.friends = [];
     this.enemys = [];
     this.killCount = 0;
@@ -93,7 +94,7 @@ export class Manager {
    * kompota君の成果(https://twitter.com/neko3mpota/status/970271526703349760/photo/1)
    * @param {Unit} sumo 攻撃されたスモグル（敵味方問わず）
    */
-  divide(sumo: Unit): boolean {
+  private divide(sumo: Unit): boolean {
     const dplaceList = [
       {row: -1, col: 0},  // 0: 上
       {row: -1, col: -1}, // 1: 左上
@@ -119,11 +120,11 @@ export class Manager {
     return false;
   };
 
-  getEnemyByNumber(num: number): Enemy {
+  private getEnemyByNumber(num: number): Enemy {
     return this.enemys.filter(e => e.num === num)[0];
   };
 
-  addEnemy(place: Place) : void {
+  private addEnemy(place: Place) : void {
     if (Math.random() < this.pConf.divide) {
       this.enemys.push(new Enemy(place, this.killCount, this.pConf));
       this.field.setField(place, this.killCount+20);
@@ -165,12 +166,12 @@ export class Manager {
     }
   }
 
-  turn(): void {
+  private turn(): void {
     this.turnEnemy();
     this.turnFriend();
   }
 
-  turnEnemy(): void {
+  private turnEnemy(): void {
     // 敵の行動
     for (let enemy of this.enemys) {
       // 1. 攻撃を試みる
@@ -199,7 +200,7 @@ export class Manager {
     }
   }
 
-  turnFriend(): void {
+  private turnFriend(): void {
     // 仲間の行動
     for (const speed of [true, false]) {
       for (let friend of this.friends) {
@@ -214,7 +215,7 @@ export class Manager {
     }
   }
 
-  actionFriend(f: Friend): boolean {
+  private actionFriend(f: Friend): boolean {
     if (f.isSealed) {
       return this.actionNormal(f);
     } else if (f.name === 'キラーマシン' || f.name === 'さそりかまきり') {
@@ -232,7 +233,7 @@ export class Manager {
    * 倒れたスモグルをfieldとenemysから取り除く
    * @param enemy 取り除くスモグル
    */
-  removeEnemy(enemy: Enemy) {
+  private removeEnemy(enemy: Enemy) {
     this.field.setField(enemy.place, 0);
     this.enemys = this.enemys.filter(e => e !== enemy);
   }
@@ -244,7 +245,7 @@ export class Manager {
    * @param {number} damage 固定ダメージの場合は与える
    * @returns {string} 攻撃の終了判定, killed/survived/missed
    */
-  attack(friend: Friend, enemy: Enemy, fixedDamage: number = 0): string {
+  private attack(friend: Friend, enemy: Enemy, fixedDamage: number = 0): string {
     const result = friend.attack(enemy, fixedDamage);
 
     if (enemy.chp <= 0) {
@@ -266,7 +267,7 @@ export class Manager {
    * 通常攻撃の行動
    * @param {Friend} f 仲間
    */
-  actionNormal(f: Friend): boolean {
+  private actionNormal(f: Friend): boolean {
     const targets = this.field.findTargets(f.place);
     if (targets.length !== 0) {
       const target = targets[randint(targets.length)];
@@ -281,7 +282,7 @@ export class Manager {
    * 隣接特技を持つキャラの行動
    * @param {Friend} f 隣接特技を持つキャラ
    */
-  actionSkillAdjacent(f: Friend): boolean {
+  private actionSkillAdjacent(f: Friend): boolean {
     // 特技の実施判定
     const wCorner = monstersSkillAdjacentWCorner.includes(f.name);
     const skillTargets = this.field.findTargets(f.place, false, wCorner);
@@ -407,7 +408,7 @@ export class Manager {
    * キラーマシンまたはさそりかまきりの行動
    * @param {Friend} f キラーマシンまたはさそりかまきり
    */
-  actionKillerMachine(f: Friend): boolean {
+  private actionKillerMachine(f: Friend): boolean {
     const targets = this.field.findTargets(f.place);
     if (targets.length !== 0) {
       const target = targets[randint(targets.length)];
@@ -430,7 +431,7 @@ export class Manager {
    * 5. いっしょにいてね（!isSticked）の場合、移動を判断
    * @param {Friend} f ホイミスライム
    */
-  actionHoimiSlime(f: Friend): boolean {
+  private actionHoimiSlime(f: Friend): boolean {
     let returnValue = false;
 
     // 1.
@@ -544,6 +545,44 @@ export class Manager {
         division: divisionLossCount,
       }
     };
+  }
+
+  /**
+   * 計算結果を集計する
+   */
+  summarizeOutputs(): SCSSummarizedOutput {
+    let countOfKilledFriends = new Array<number>(this.friends.length).fill(0);
+    for(const output of this.trialOutputs) {
+      for(const order of output.result.orderOfKilledFriends) {
+        countOfKilledFriends[order]++;
+      }
+    }
+
+    return {
+      result: {
+        reason: {
+          success: this.trialOutputs.filter(o => o.result.reason === 'success').length,
+          killed: this.trialOutputs.filter(o => o.result.reason === 'friends are killed').length,
+          genocided: this.trialOutputs.filter(o => o.result.reason === 'enemys are genocided').length,
+        },
+        turnPassed: {
+          mean: mean(this.trialOutputs.map(o => o.result.turnPassed)),
+          std: std(this.trialOutputs.map(o => o.result.turnPassed)),
+        },
+        countOfKilledFriends
+      },
+      exp: {
+        total: {
+          mean: mean(this.trialOutputs.map(o => o.exp.total)),
+          std: std(this.trialOutputs.map(o => o.exp.total)),
+        },
+        perMonster: getMeanAndStdFromArray(this.trialOutputs.map(o => o.exp.perMonster))
+      },
+      loss: {
+        action: getMeanAndStdFromArray(this.trialOutputs.map(o => o.loss.action)),
+        division: getMeanAndStdFromArray(this.trialOutputs.map(o => o.loss.division)),
+      }
+    }
   }
 
 }

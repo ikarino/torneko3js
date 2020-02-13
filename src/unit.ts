@@ -13,17 +13,15 @@ export class Unit {
   def: number = -1;
   readonly recovery: number;
   exp: number;
+  readonly hpDope: number;
+  readonly atkDope: number;
   weakenAtk: number;
   weakenDef: number;
   isSealed: boolean;
-  readonly hpDope: number;
-  readonly atkDope: number;
-  /*
-   * 将来的な拡張
-  isDancing: boolean;
-  isConfused: boolean;
-  isBline: boolean;
-   */
+  // 将来的な拡張
+  // isDancing: boolean;
+  // isConfused: boolean;
+  // isBline: boolean;
   place: Place;
   constructor(inp: SCSFriendInput, place: Place, readonly pConf: ProbabilityConfig) {
     this.name = inp.name;                                // モンスター名
@@ -108,12 +106,19 @@ export class Unit {
     }
   }
   
-  getMinAndMaxDamage(enemy: Unit): [number, number] {
-    let minDamage = Math.round(Math.ceil(this.atk) * 1.3 * Math.pow(35/36, enemy.def) * 7.0/8);
-    let maxDamage = Math.round(Math.ceil(this.atk) * 1.3 * Math.pow(35/36, enemy.def) * 9.0/8);
-    minDamage = minDamage === 0 ? 1 : minDamage;
-    maxDamage = maxDamage === 0 ? 1 : maxDamage;
-    return [minDamage, maxDamage];
+  getMinAndMaxDamage(enemy: Unit): [number, number, number] {
+    const RANDMAX = 256;
+    const calc = (rand: number): number => {
+      const damage = Math.round(Math.ceil(this.atk) * 1.3 * Math.pow(35/36, enemy.def) * (7/8+rand/RANDMAX/4));
+      return damage === 0 ? 1 : damage;
+    };
+    const minDamage = calc(0);
+    const maxDamage = calc(RANDMAX-1);
+    let meanDamage = 0;
+    for (let rand = 0; rand < RANDMAX; rand++) {
+      meanDamage += calc(rand)/RANDMAX;
+    }
+    return [minDamage, maxDamage, meanDamage];
   }
 }
 

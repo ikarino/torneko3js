@@ -22,6 +22,7 @@ export interface SCSFriendInput {
 export interface SCSConfigInput {
   turn: number,
   trial: number,
+  pConf?: ProbabilityConfig,
 }
 
 export interface SCSInput {
@@ -46,7 +47,41 @@ export interface SCSTrialOutput {
     action: number[],
     division: number[],
   },
-  
+}
+
+export interface SCSSummarizedOutput {
+  result: {
+    reason: {
+      success: number,
+      killed: number,
+      genocided: number,
+    },
+    turnPassed: {
+      mean: number,
+      std: number,
+    },
+    countOfKilledFriends: number[],
+  },
+  exp: {
+    total: {
+      mean: number,
+      std: number,
+    },
+    perMonster: {
+      mean: number[],
+      std: number[],      
+    }
+  },
+  loss: {
+    action: {
+      mean: number[],
+      std: number[],      
+    },
+    division: {
+      mean: number[],
+      std: number[],      
+    },
+  }
 }
 
 export interface Place {
