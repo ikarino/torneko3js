@@ -504,26 +504,13 @@ export class Manager {
   }
 
   toJson(): SCSTrialOutput {
-    // exp/monster
-    let expPerMonster = this.friends.map(f => f.killCount*22);
-    let expPerMonsterPerTurn = this.friends.map(f => f.killCount*22/this.config.turn);
-
-    // loss counts
-    let divisionLossCount = this.friends.map(f => f.divisionLossCount/this.config.turn);
-    let actionLossCount = this.friends.map(f => {
-      const turns = f.doubleSpeed ? 2 : 1;
-      return f.actionLossCount/this.config.turn/turns;
-    });
-
     // result
     let finishState: string = 'success';
-    let orderOfKilledFriends: number[] = [];
     if (this.turnNow < this.config.turn) {
       if (this.enemys.length === 0) {
         finishState = 'genocided';
       } else {
         finishState = 'killed';
-        orderOfKilledFriends = this.friends.filter(f => f.chp < 0).map(f => f.order);
       }
     }
 
@@ -532,17 +519,17 @@ export class Manager {
       result: {
         finishState,
         turnPassed: this.turnNow,
-        orderOfKilledFriends,
+        orderOfKilledFriends: this.friends.filter(f => f.chp < 0).map(f => f.order),
       },
       exp: {
         total: this.killCount*22,
         perTurn: this.killCount*22/this.turnNow,
-        perMonster: expPerMonster,                
-        perMonsterPerTurn: expPerMonsterPerTurn,
+        perMonster: this.friends.map(f => f.killCount*22),                
+        perMonsterPerTurn: this.friends.map(f => f.killCount*22/this.turnNow),
       },
       loss: {
-        action: actionLossCount,
-        division: divisionLossCount,
+        action: this.friends.map(f => f.actionLossCount),
+        division: this.friends.map(f => f.divisionLossCount),
       }
     };
   }
