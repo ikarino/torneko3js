@@ -122,6 +122,7 @@ export interface KaisekiDataFloor {
 
 export interface ProbabilityConfig {
   attack: number,        // 通常攻撃があたる確率
+  arrow: number,         // 投擲攻撃があたる確率
   divide: number,        // スモールグールの分裂確率
   hoimin: {              // ホイミスライム
     skill: number,       // 特技使用率
@@ -175,7 +176,7 @@ export interface ProbabilityConfig {
     skill: number,
     range: number,  // 射程
   },
-  dog: {
+  niper: {
     skill: number,
     range: number,  // 射程
   },

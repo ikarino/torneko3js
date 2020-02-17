@@ -1,6 +1,7 @@
 // scsField.ts
 // 
 import { Place, SCSFieldInput } from './interfaces';
+import { logger } from './config';
 
 export class SCSField {
   col: number;

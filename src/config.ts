@@ -1,5 +1,14 @@
+import pino from 'pino';
+
+export const logger = pino({
+  level: 'silent',
+  base: null,
+  timestamp :false,
+});
+
 export const defaultProbabilityConf = {
   attack: 0.92,
+  arrow: 0.88,
   divide: 0.25,
   hoimin: {
     skill: 0.3553, // kompota君の成果
@@ -53,7 +62,7 @@ export const defaultProbabilityConf = {
     skill: 0.5,
     range: 10,  // 射程
   },
-  dog: {
+  niper: {
     skill: 0.37,
     range: 10,  // 射程
   },

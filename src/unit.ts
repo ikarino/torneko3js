@@ -3,6 +3,7 @@
 
 import { getBasicMonsterStatus } from "./status";
 import { SCSFriendInput, Place, ProbabilityConfig } from './interfaces';
+import { logger } from './config';
 
 export class Unit {
   readonly name: string;
@@ -89,19 +90,22 @@ export class Unit {
 
   attack(enemy: Unit, fixedDamage: number = 0): boolean {
     if (this.atk === 0) {
+      logger.debug(`様子を見ている because ${this.name}'s atk is 0`)
       return false
     }
     if (Math.random() < this.pConf.attack) {
       const damage = fixedDamage === 0 ? (
-        Math.round(Math.ceil(this.atk) * 1.3 * Math.pow(35/36, enemy.def) * (Math.random()/4 + 7.0/8)) 
+        Math.round(this.atk * 1.3 * Math.pow(35/36, enemy.def) * (Math.random()/4 + 7/8)) 
       ) : fixedDamage;
       if (damage < 1.0) {
         enemy.chp -= 1.0;
       } else {
         enemy.chp -= damage;
       }
+      logger.debug(`attacked ${enemy.name} at [${enemy.place.row}, ${enemy.place.col}]: damage(${damage})`);
       return true;
     } else {
+      logger.debug(`attacked ${enemy.name} at [${enemy.place.row}, ${enemy.place.col}]: but missed.`);
       return false;
     }
   }
@@ -131,16 +135,22 @@ export class Friend extends Unit {
   readonly isSticked: boolean;
 
   constructor(inp: SCSFriendInput, order: number, place: Place, pConf: ProbabilityConfig) {
-      super(inp, place, pConf);
-      this.order = order;
-      this.doubleSpeed = inp.doubleSpeed !== undefined ? inp.doubleSpeed : false;
-      this.isSticked = inp.isSticked !== undefined ? inp.isSticked : true;
+    super(inp, place, pConf);
+    this.order = order;
+    this.doubleSpeed = inp.doubleSpeed !== undefined ? inp.doubleSpeed : false;
+    this.isSticked = inp.isSticked !== undefined ? inp.isSticked : true;
+    logger.debug({
+      name: this.name,
+      mhp: this.mhp,
+      atk: this.atk,
+      def: this.def,
+    });
   }
 
   getExp(exp:number = 22): void {
     this.killCount += 1;
     this.exp += exp;
-    
+    logger.debug(`get EXP`)
     // レベルアップ処理
     while(getBasicMonsterStatus(this.name, this.lv+1).exp < this.exp) {
       const status0 = getBasicMonsterStatus(this.name, this.lv);
@@ -151,6 +161,7 @@ export class Friend extends Unit {
       this.chp += status1.mhp0 - status0.mhp0;
       this.setAtk();
       this.setDef();
+      logger.debug(`lv up: ${this.lv-1} -> ${this.lv}`);
     }
   }
 
@@ -159,6 +170,7 @@ export class Friend extends Unit {
   }
 
   naturalRecovery(): void {
+    logger.debug(`natural recovery: ${(this.mhp/this.recovery).toFixed(2)}`)
     this.chp += this.mhp / this.recovery;
     if (this.chp > this.mhp) {
       this.chp = this.mhp;

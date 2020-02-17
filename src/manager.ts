@@ -8,7 +8,8 @@ import {
   defaultProbabilityConf,
   monstersSkillAdjacent,
   monstersSkillAdjacentWCorner,
-  monstersSkillAdjacentWOCorner
+  monstersSkillAdjacentWOCorner,
+  logger
 } from './config';
 import checkInp from './checkInp';
 import { mean, std, getMeanAndStdFromArray } from './mathFunctions';
@@ -44,11 +45,9 @@ export class Manager {
     this.pConf = inp.config.pConf ? inp.config.pConf : defaultProbabilityConf;
     this.config = this.inp.config;
     this.trialOutputs = [];
-
-    this.init();
   }
 
-  private init(): void {
+  protected init(): void {
     this.friends = [];
     this.enemys = [];
     this.killCount = 0;
@@ -83,9 +82,7 @@ export class Manager {
         row: Math.floor(FieldIndex/this.inp.field.col), 
         col: FieldIndex%this.inp.field.col
       };
-      this.enemys.push(new Enemy(place, this.killCount, this.pConf));
-      this.field.setField(place, this.killCount+20);
-      this.killCount += 1;
+      this.addEnemy(place, 1.0);
     }
   }
 
@@ -120,15 +117,16 @@ export class Manager {
     return false;
   };
 
-  private getEnemyByNumber(num: number): Enemy {
+  getEnemyByNumber(num: number): Enemy {
     return this.enemys.filter(e => e.num === num)[0];
   };
 
-  private addEnemy(place: Place) : void {
-    if (Math.random() < this.pConf.divide) {
+  private addEnemy(place: Place, probability: number = this.pConf.divide) : void {
+    if (Math.random() < probability) {
       this.enemys.push(new Enemy(place, this.killCount, this.pConf));
       this.field.setField(place, this.killCount+20);
       this.killCount += 1;
+      logger.debug(`divided into [${place.row}, ${place.col}]`);
     }
   }
 
@@ -141,7 +139,6 @@ export class Manager {
    *          └── turnFriend
    */
   runAllTrial(): void {
-    this.init();
     for (let trial = 0; trial < this.config.trial; trial ++) {
       this.trial();
       this.trialOutputs.push(this.toJson());
@@ -166,41 +163,42 @@ export class Manager {
     }
   }
 
-  private turn(): void {
+  protected turn(): void {
     this.turnEnemy();
     this.turnFriend();
   }
 
-  private turnEnemy(): void {
+  turnEnemy(): void {
     // 敵の行動
     for (let enemy of this.enemys) {
-      // 1. 攻撃を試みる
-      const targets = this.field.findTargets(enemy.place);
-      if (targets.length !== 0) {
-        const target = targets[randint(targets.length)];
-        const friend = this.friends[target-10]
-        const result = enemy.attack(friend);
-
-        // 対象がスモールグールだった場合は分裂処理
-        if (friend.name === 'スモールグール' && ! friend.isSealed && result) {
-          this.divide(this.friends[target-10]);
-        }
-        continue; // 攻撃したら終了
-      }
-
-      // 2. 移動を試みる
-      const emptyPlaces = this.field.findTargets(enemy.place, true, false);
-      if (emptyPlaces.length !== 0) {
-        const place = emptyPlaces[randint(emptyPlaces.length)];
-        this.field.setField(enemy.place, 0);
-        this.field.setField(place, enemy.num+20);
-        enemy.place = place;
-      }
-
+      this.actionEnemy(enemy);
     }
   }
 
-  private turnFriend(): void {
+  protected actionEnemy(enemy: Enemy): void {
+    // 1. 攻撃を試みる
+    const targets = this.field.findTargets(enemy.place);
+    if (targets.length !== 0) {
+      const target = targets[randint(targets.length)];
+      const friend = this.friends[target-10]
+      const result = enemy.attack(friend);
+      // 対象がスモールグールだった場合は分裂処理
+      if (friend.name === 'スモールグール' && ! friend.isSealed && result) {
+        this.divide(this.friends[target-10]);
+      }
+      return; // 攻撃したら終了
+    }
+    // 2. 移動を試みる
+    const emptyPlaces = this.field.findTargets(enemy.place, true, false);
+    if (emptyPlaces.length !== 0) {
+      const place = emptyPlaces[randint(emptyPlaces.length)];
+      this.field.setField(enemy.place, 0);
+      this.field.setField(place, enemy.num+20);
+      enemy.place = place;
+    }
+  }
+
+  turnFriend(): void {
     // 仲間の行動
     for (const speed of [true, false]) {
       for (let friend of this.friends) {
@@ -215,13 +213,15 @@ export class Manager {
     }
   }
 
-  private actionFriend(f: Friend): boolean {
+  protected actionFriend(f: Friend): boolean {
     if (f.isSealed) {
       return this.actionNormal(f);
     } else if (f.name === 'キラーマシン' || f.name === 'さそりかまきり') {
       return this.actionKillerMachine(f);
     } else if (f.name === 'ホイミスライム') {
       return this.actionHoimiSlime(f);
+    } else if (f.name === 'リリパット' || f.name === 'ドッグスナイパー') {
+      return this.actionArrow(f);
     } else if (monstersSkillAdjacent.includes(f.name)) {
       return this.actionSkillAdjacent(f);
     } else {
@@ -283,6 +283,7 @@ export class Manager {
    * @param {Friend} f 隣接特技を持つキャラ
    */
   private actionSkillAdjacent(f: Friend): boolean {
+    logger.debug('# monster with skill adjacent');
     // 特技の実施判定
     const wCorner = monstersSkillAdjacentWCorner.includes(f.name);
     const skillTargets = this.field.findTargets(f.place, false, wCorner);
@@ -392,16 +393,60 @@ export class Manager {
       }
     }
 
-    // 通常攻撃の実施判定
-    const attackTargets = this.field.findTargets(f.place, false, false);
-    if (attackTargets.length !== 0) {
-      const target = attackTargets[randint(attackTargets.length)];
-      const enemy = this.getEnemyByNumber(target - 20);
-      this.attack(f, enemy);
+    // 通常攻撃
+    return this.actionNormal(f);
+  }
 
+  /**
+   * リリパットまたはドッグスナイパーの行動
+   * @param f リリパットまたはドッグスナイパー
+   */
+  private actionArrow(f: Friend): boolean {
+    logger.debug('# monster with arrow skill');
+    const skillInfo = f.name === "リリパット" ? this.pConf.lily : this.pConf.niper;
+    const arrowPower = f.name === "リリパット" ? 0 : 3; // TODO
+
+    const num = this.field.findLineTarget(f.place, skillInfo.skill, skillInfo.range);
+
+    // 1. 確率的に矢を打たなかった、もしくは矢の対象が見つからなかったとき
+    if (num === 0) {
+      logger.debug("  => skill not triggered or target not found");
+      return this.actionNormal(f);
+    }
+    // 2. 矢が外れた時
+    if (Math.random() > this.pConf.arrow) {
+      logger.debug("  => but missed");
       return true;
     }
-    return false;
+
+    // 3. 矢が当たった時
+    logger.debug(`  => targetNumber: ${num}`);
+    const target = num < 20 ? this.friends[num-10] : this.getEnemyByNumber(num-20);
+    logger.debug(`    - target: ${num} at [${target.place.row}, ${target.place.col}]`);
+
+    // 4. ダメージ計算
+    // TODO(投擲系の計算式が不明。適当実装。)
+    let damage = f.atk * (1 + (arrowPower-8)/16) * Math.pow(35/36, target.def);
+    damage = Math.round(damage * (Math.random()/4 + 7/8));
+    target.chp -= damage;
+    logger.debug(`    - damage: ${damage}`);
+
+    // 5. 経験値処理
+    if (target.chp < 0) {
+      f.getExp();
+      this.removeEnemy(this.getEnemyByNumber(num-20));
+      return true;
+    }
+
+    // 6. 分裂処理
+    if (target.name !== 'スモールグール') {
+      return true;
+    }
+    const wasAbleToDivide = this.divide(target);
+    if (!wasAbleToDivide) {
+      f.divisionLossCount += 1;
+    }
+    return true;
   }
 
   /**
@@ -432,6 +477,7 @@ export class Manager {
    * @param {Friend} f ホイミスライム
    */
   private actionHoimiSlime(f: Friend): boolean {
+    logger.debug(`# monster hoimin`);
     let returnValue = false;
 
     // 1.
@@ -451,6 +497,7 @@ export class Manager {
         }
       }
     }
+    logger.debug(`Hoimi targets: ${hoimiTargets.length}`);
     returnValue = returnValue || !!hoimiTargets.length;
 
     // 2.
@@ -462,7 +509,9 @@ export class Manager {
       }
     }
     if (execSkill) {
+      logger.debug(`  => did Hoimi`);
       for (let target of hoimiTargets) {
+        logger.debug(`  - target@[${target.place.row}, ${target.place.col}]`)
         target.chp += 25;
         if (target.chp > target.mhp) { target.chp = target.mhp; }
       }
@@ -472,18 +521,23 @@ export class Manager {
     // 3.
     const attackTargets = this.field.findTargets(f.place);
     returnValue = returnValue || !!attackTargets.length;
+    logger.debug(`Attack targets: ${attackTargets.length}`);
+
     // 4.
     for (let enemyId of attackTargets) {
       if (Math.random() < this.pConf.hoimin.attack) {
         let enemy = this.getEnemyByNumber(enemyId - 20);
         this.attack(f, enemy);
+        logger.log(`  => attacked : @[${enemy.place.row}, ${enemy.place.col}]`);
         return returnValue;
       }
+      logger.debug(`not attacked.`);
     }
 
     // 5.
     const vacantTargets = this.field.findTargets(f.place, true, false);
     returnValue = returnValue || !!vacantTargets.length;
+    logger.debug(`Vacant places: ${vacantTargets.length}`);
     if (
       !f.isSticked &&                            // ここで待っててではない
       Math.random() < this.pConf.hoimin.move &&    // 移動確率
@@ -491,7 +545,7 @@ export class Manager {
       !!vacantTargets.length                     // 移動場所がある
       ) {
         const newPlace = vacantTargets[randint(vacantTargets.length)];
-        // console.log('moved from ', f.place, ' to ', newPlace);
+        logger.debug(`  => moved from [${f.place.row}, ${f.place.col}] to [${newPlace.row}, ${newPlace.col}]`);
         this.field.setField(f.place, 0);
         this.field.setField(newPlace, 10 + this.friends.indexOf(f));
         f.place = newPlace;
