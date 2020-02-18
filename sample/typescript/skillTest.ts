@@ -2,8 +2,8 @@
  * 特技のテスト用
  */
 
-import { Manager } from '../src/Manager';
-import { SCSFriendInput, SCSInput } from '../src/interfaces';
+import { Manager } from '../../src/lib/manager';
+import { SCSFriendInput, SCSInput } from '../../src/lib/interfaces';
 
 let inp: SCSInput = {
   friends: [],

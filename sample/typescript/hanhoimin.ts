@@ -2,9 +2,9 @@
  * 半ホイミンの実行サンプル
  */
 
-import { Manager } from '../src/manager';
-import { defaultProbabilityConf as pConf } from '../src/config';
-import { SCSFriendInput, SCSInput } from '../src/interfaces';
+import { Manager } from '../../src/lib/manager';
+import { defaultProbabilityConf as pConf } from '../../src/lib/config';
+import { SCSFriendInput, SCSInput } from '../../src/lib/interfaces';
 
 const inp: SCSInput = {
     friends: [],

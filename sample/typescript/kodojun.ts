@@ -1,5 +1,5 @@
 // import { getOrder } from '../src/index';
-import { getOrder } from '../src/actionOrder';
+import { getOrder } from '../../src/lib/actionOrder';
 
 const input = [
   {

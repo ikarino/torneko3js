@@ -6,15 +6,15 @@ import { Manager } from './manager';
 import { SCSInput, Place } from './interfaces';
 import { logger } from './config';
 
-const hpPad = (chp: number): string => {
-  let hpPad = Math.floor(chp).toFixed(0);
-  if (hpPad.length > 3) {
-    throw new Error("invalid hp: " + hpPad);
+const padInt = (chp: number): string => {
+  let pad = Math.floor(chp).toFixed(0);
+  if (pad.length > 3) {
+    throw new Error("could not pad: " + pad);
   }
-  for(let i = 0; hpPad.length < 3; i++) {
-    hpPad = " " + hpPad;
+  for(let i = 0; pad.length < 3; i++) {
+    pad = " " + pad;
   }
-  return hpPad;
+  return pad;
 }
 
 export class DebugManager extends Manager {
@@ -126,11 +126,11 @@ export class DebugManager extends Manager {
 
     let fieldStr: string = "   ";
     for(let col = 0; col < field.col; col++) {
-      fieldStr += chalk.black.bgWhite(hpPad(col));
+      fieldStr += chalk.black.bgWhite(padInt(col));
     }
     fieldStr += "\n";
     for(let row = 0; row < field.row; row++) {
-      fieldStr += chalk.black.bgWhite(hpPad(row));
+      fieldStr += chalk.black.bgWhite(padInt(row));
       for(let col = 0; col < field.col; col++) {
         const d = field.data[row][col];
         if(d === 0) {
@@ -139,15 +139,15 @@ export class DebugManager extends Manager {
           fieldStr += chalk.bgGray("   ");
         } else if (d < 20) {
           if (row === spotlight.row && col === spotlight.col) {
-            fieldStr += chalk.white.bgBlue(hpPad(this.friends[d-10].chp));
+            fieldStr += chalk.white.bgBlue(padInt(this.friends[d-10].chp));
           } else {
-            fieldStr += chalk.white.bgBlueBright(hpPad(this.friends[d-10].chp));
+            fieldStr += chalk.white.bgBlueBright(padInt(this.friends[d-10].chp));
           }
         } else {
           if (row === spotlight.row && col === spotlight.col) {
-            fieldStr += chalk.white.bgRed(hpPad(this.getEnemyByNumber(d-20).chp));
+            fieldStr += chalk.white.bgRed(padInt(this.getEnemyByNumber(d-20).chp));
           } else {
-            fieldStr += chalk.white.bgRedBright(hpPad(this.getEnemyByNumber(d-20).chp));
+            fieldStr += chalk.white.bgRedBright(padInt(this.getEnemyByNumber(d-20).chp));
           }
         }
       }
