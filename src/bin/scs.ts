@@ -3,25 +3,25 @@ import fs from 'fs';
 
 import readlineSync from 'readline-sync';
 import { Command } from 'commander';
-import { PathReporter } from 'io-ts/lib/PathReporter';
+import { assertType } from 'typescript-is';
+import chalk from 'chalk';
 
 import { sampleInputs } from '../lib/sampleInputs';
 import { DebugManager } from '../lib/debugManager';
 import { Manager } from '../lib/manager';
 import { SCSInput } from '../lib/interfaces';
 
-import { JSCSInput } from './jsonValidation';
-
 const pjson = require('../../package.json');
 const program = new Command();
 
-const scs = (inp: SCSInput, debug=false) => {
+const scs = (inp: SCSInput, debug: boolean) => {
   if (debug) {
     const m = new DebugManager(inp);
     m.trial();
   } else {
     const m = new Manager(inp);
     m.runAllTrial();
+    console.log(m.summarizeOutputs());
   }
 }
 
@@ -31,16 +31,27 @@ program
   .option('-i --input <path>', 'specify your json input file')
   .parse(process.argv)
 
+const isDebug = program.debug !== undefined;
+
 if (program.input === undefined) {
-  // TODO
-  // readline => select sampleinputs
+  console.log(chalk.bgRed.white("no input."));
+  if (!readlineSync.keyInYN('run with template ?')) {
+    process.exit();
+  }
+  const index = readlineSync.keyInSelect(Object.keys(sampleInputs), 'which template ?', 
+    { cancel: 'exit' });
+  if (index === -1) {
+    process.exit();
+  }
+  const inp = sampleInputs[Object.keys(sampleInputs)[index]];
+  scs(inp, isDebug);
 } else {
   console.log(program.input)
   const j = JSON.parse(fs.readFileSync(program.input).toString());
-  if(JSCSInput.is(j)) {
-    const inp = JSCSInput.encode(j);
-    scs(inp);
-  } else {
-    console.log("wrong input")
+  try {
+    const inp = assertType<SCSInput>(j);
+    scs(inp, isDebug);
+  } catch(error) {
+    console.log(chalk.bgRed.white("Invalid input."));
   }
 }

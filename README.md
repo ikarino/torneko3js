@@ -1,5 +1,5 @@
 # torneko3js
-PS2ゲーム「トルネコ3」のJavaScriptライブラリです。  
+PS2ゲーム「トルネコ3」のJavaScriptライブラリ及びスモコンシミュレータ`scs`です。  
 TypeScriptで開発しています。
 
 - [scs](https://github.com/ikarino/scs)の移植
@@ -23,7 +23,20 @@ yarn add torneko3js
 ### google spreadsheetの場合
 調べています。[clasp](https://github.com/google/clasp)を使うっぽい？
 
-## 使用例(JavaScript, TypeScript)
+## 使用例
+### scs(CLIツール)
+```bash
+$ scs -h
+Usage: scs [options]
+
+Options:
+  -V, --version      output the version number
+  -d --debug         debug mode
+  -i --input <path>  specify your json input file
+  -h, --help         output usage information
+```
+
+### ライブラリ(JavaScript, TypeScript)
 ```js
 import { Manager, sampleSCSInputs } from 'torneko3js';
 
@@ -52,7 +65,7 @@ console.log(m.toJson());
 - [x] スライムブレス／ドラゴスライム／ドラゴメタル
 - [ ] さつじんき／エリミネーター
 - [ ] シャドーナイト
-- [ ] リリパット／ドックスナイパー
+- [x] リリパット／ドックスナイパー
 - [ ] ドラゴン
 - [ ] 力をためる系（レノファイター／グレートホーン／あくましんかん）
 - [ ] 単体状態異常系（タップペンギー／いわとびあくま／だいまどう／ダンスキャロット／あめふらし／テンツク／ラストテンツク／まどうし）
@@ -100,7 +113,7 @@ console.log(m.toJson());
 - config: 試行回数と試行ターン数、確率設定
 
 ### friends
-以下の項目を行動順に合わせて10匹分入力します。
+以下の項目を行動順に合わせて10匹分、行動順に配列として与えます。
 |入力|区分|詳細|
 |:---:|:---:|:---|
 |name|必須|キラーマシンなどの名前|

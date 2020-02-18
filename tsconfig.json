@@ -9,7 +9,10 @@
     "declaration": true,
     "sourceMap": true,
     "newLine": "lf",
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "plugins": [
+      { "transform": "typescript-is/lib/transform-inline/transformer" }
+    ]
   },
   "include": [
     "src"

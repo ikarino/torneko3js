@@ -40,7 +40,13 @@ export class Manager {
   field: SCSField = new SCSField({row: 0, col: 0, data: []});
   trialOutputs: SCSTrialOutput[];
   constructor(inp: SCSInput) {
-    checkInp(inp);
+    try {
+      checkInp(inp);
+    } catch(e) {
+      console.log("Error in input: " + e);
+      process.exit(1);
+    }
+    
     this.inp = inp;
     this.pConf = inp.config.pConf ? inp.config.pConf : defaultProbabilityConf;
     this.config = this.inp.config;

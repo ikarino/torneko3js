@@ -2,7 +2,7 @@
   "name": "torneko3js",
   "description": "library for PS2 game Torneko3",
   "repository": "https://github.com/ikarino/torneko3js",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "ikarino",
   "license": "MIT",
   "homepage": "https://github.com/ikarino/torneko3js",
@@ -10,14 +10,16 @@
     "node": ">= 12"
   },
   "main": "dist/lib/index.js",
-  "bin": "dist/bin/scs.js",
+  "bin": {
+    "scs": "dist/bin/scs.js"
+  },
   "files": [
     "dist"
   ],
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
-    "build": "tsc",
+    "build": "ttsc",
     "prepublishOnly": "npm run build",
     "browser": "browserify -r ./src/index.ts:torneko3 -p [ tsify --noImplicitAny ] > sample/browser/torneko3.bundle.js"
   },
@@ -47,14 +49,14 @@
     "browserify": "^16.5.0",
     "chalk": "^3.0.0",
     "commander": "^4.1.1",
-    "fp-ts": "^2.5.0",
-    "io-ts": "^2.1.1",
     "jest": "^25.1.0",
     "pino": "^5.16.0",
     "readline-sync": "^1.4.10",
     "ts-jest": "^25.2.0",
     "ts-node": "^8.6.2",
     "tsify": "^4.0.1",
-    "typescript": "^3.7.5"
+    "ttypescript": "^1.5.10",
+    "typescript": "^3.7.5",
+    "typescript-is": "^0.14.1"
   }
 }
