@@ -195,7 +195,7 @@ export class Manager {
       return; // 攻撃したら終了
     }
     // 2. 移動を試みる
-    const emptyPlaces = this.field.findTargets(enemy.place, true, false);
+    const emptyPlaces = this.field.findVacants(enemy.place, false);
     if (emptyPlaces.length !== 0) {
       const place = emptyPlaces[randint(emptyPlaces.length)];
       this.field.setField(enemy.place, 0);
@@ -292,7 +292,7 @@ export class Manager {
     logger.debug('# monster with skill adjacent');
     // 特技の実施判定
     const wCorner = monstersSkillAdjacentWCorner.includes(f.name);
-    const skillTargets = this.field.findTargets(f.place, false, wCorner);
+    const skillTargets = this.field.findTargets(f.place, wCorner);
     if (skillTargets.length !== 0) {
       const target = skillTargets[randint(skillTargets.length)];
       const enemy = this.getEnemyByNumber(target - 20);
@@ -541,7 +541,7 @@ export class Manager {
     }
 
     // 5.
-    const vacantTargets = this.field.findTargets(f.place, true, false);
+    const vacantTargets = this.field.findVacants(f.place, false);
     returnValue = returnValue || !!vacantTargets.length;
     logger.debug(`Vacant places: ${vacantTargets.length}`);
     if (

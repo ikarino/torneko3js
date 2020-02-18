@@ -33,21 +33,17 @@ export class SCSField {
   }
 
   /**
-   * 周囲から特技等の対象や場所を探す
-   * TODO
-   * any[]は実際number[] or Place[] なのだけれど、うまく書く方法は無いのかな？
+   * 周囲から特技等の対象を探す
    * @param place 対象を探すキャラの場所
    * @param findEmpty true/false = 空白を探す/敵を探す
    * @param includeKado 角抜け位置を含めるかどうか
    */
-  findTargets(place: Place, findEmpty=false, includeKado=false): any[] {
+  findTargets(place: Place, withCorner=false): number[] {
     const myNumber = this.getField(place);
     const rowMe = place.row;
     const colMe = place.col;
     
-    const isTarget = findEmpty ? (
-      (num: number) => (num === 0)
-    ) : myNumber >= 20 ? (
+    const isTarget = myNumber >= 20 ? (
       (num: number) => [...Array(10)].map((_, i) => i+10).includes(num)
     ) : (
       (num: number) => (num >= 20)
@@ -63,11 +59,7 @@ export class SCSField {
 
         // 上下左右は無条件で追加
         if (dcol*drow === 0) {
-          if (findEmpty) {
-            targets.push(tPlace);
-          } else {
-            targets.push(tNumber);
-          }
+          targets.push(tNumber);
           continue;
         }
 
@@ -75,18 +67,53 @@ export class SCSField {
         const numberUD = this.data[rowMe+drow][colMe];
         const numberLR = this.data[rowMe][colMe+dcol];
         const isPlaceKado = (numberUD === 1 || numberLR === 1);
-        if (!isPlaceKado || includeKado) {
-          if (findEmpty) { 
-            targets.push(tPlace); 
-          } else { 
-            targets.push(tNumber);
-          }
+        if (!isPlaceKado || withCorner) {
+          targets.push(tNumber);
         }
       }
     }
     return targets;
   }
 
+  /**
+   * 周囲から特技等の対象や場所を探す
+   * TODO
+   * any[]は実際number[] or Place[] なのだけれど、うまく書く方法は無いのかな？
+   * @param place 対象を探すキャラの場所
+   * @param withCorner 角抜け位置を含めるかどうか
+   */
+  findVacants(place: Place, withCorner=false): Place[] {
+    const myNumber = this.getField(place);
+    const rowMe = place.row;
+    const colMe = place.col;
+    
+    const isTarget = (num: number) => (num === 0);
+
+    let targets = [];
+    for (let drow of [-1, 0, 1]) {
+      for (let dcol of [-1, 0, 1]) {
+        const tPlace = {row: rowMe+drow, col: colMe+dcol};
+        const tNumber = this.getField(tPlace);
+        if (! isTarget(tNumber)) { continue; }       // not target
+        if (drow === 0 && dcol === 0) { continue; }  // myself
+
+        // 上下左右は無条件で追加
+        if (dcol*drow === 0) {
+          targets.push(tPlace);
+          continue;
+        }
+
+        // 斜めは壁によって角抜けになっているかで場合分け
+        const numberUD = this.data[rowMe+drow][colMe];
+        const numberLR = this.data[rowMe][colMe+dcol];
+        const isPlaceKado = (numberUD === 1 || numberLR === 1);
+        if (!isPlaceKado || withCorner) {
+          targets.push(tPlace); 
+        }
+      }
+    }
+    return targets;
+  }
   /**
    * 射程の長い特技を使用するキャラの、特技適用先を返す。
    * 左、左上、上、・・・の順に判定しているが、この順序が正しいか要調査。
