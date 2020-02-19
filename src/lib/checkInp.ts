@@ -44,12 +44,6 @@ const checkInp = (inp: SCSInput): void => {
 }
 
 const checkFriend = (f: SCSFriendInput): void => {
-  if (f.name === undefined) {
-    throw new Error("friend.name not specified");
-  }
-  if (f.lv === undefined) {
-    throw new Error("friend.lv not specified !");
-  }
   if (!Number.isInteger(f.lv) || f.lv < 1 || f.lv > 99) {
     throw new Error("lv must be in 1..99");
   }
@@ -65,7 +59,7 @@ const checkFriend = (f: SCSFriendInput): void => {
   if (f.weakenDef && ![0, 1, 2, 3, 4, 5, 6, 7, 8, 9].includes(f.weakenDef)) {
     throw new Error("weakenDef must be in [0, 1, 2, 3, 4, 5, 6].");
   }
-  if (f.isSticked !== undefined && f.isSticked && f.name !== "ホイミスライム") {
+  if (f.isSticked !== undefined && !f.isSticked && f.name !== "ホイミスライム") {
     throw new Error(`${f.name} must be "isSticked: true"`);
   }
 }

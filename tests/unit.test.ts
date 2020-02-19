@@ -1,5 +1,5 @@
-import { Friend, Enemy } from "../src/unit";
-import { defaultProbabilityConf } from '../src/config';
+import { Friend, Enemy } from "../src/lib/unit";
+import { defaultProbabilityConf } from '../src/lib/config';
 
 describe('status', (): void => {
   test('Friend: 普通のキラーマLv13', (): void => {
@@ -69,8 +69,9 @@ describe('status', (): void => {
     expect(km.chp).toBe(86.05);
   });
 
-  test('Friend: 9回弱化キラーマLv13', (): void => {
-    const km = new Friend(
+  test('Friend: 8, 9回弱化キラーマLv13', (): void => {
+    defaultProbabilityConf.basic.attack = 1.0;
+    const km1 = new Friend(
       {
         name: 'キラーマシン',
         lv: 13,
@@ -83,17 +84,17 @@ describe('status', (): void => {
       },
       defaultProbabilityConf
     );
-    expect(km.atk).toBe(0);
+    expect(km1.atk).toBe(0);
     
-    const sm = new Enemy({row: 0, col: 0}, 0, defaultProbabilityConf);
-    expect(km.attack(sm)).toBeFalsy();
-    expect(sm.chp).toBe(55);
-  });
-  test('Friend: キラーマLv13防御力弱化', (): void => {
-    const km = new Friend(
+    const sm1 = new Enemy({row: 0, col: 0}, 0, defaultProbabilityConf);
+    expect(km1.attack(sm1)).toBeFalsy();
+    expect(sm1.chp).toBe(55);
+
+    const km2 = new Friend(
       {
         name: 'キラーマシン',
-        lv: 13,
+        lv: 1,
+        weakenAtk: 8
       },
       0,
       {
@@ -102,8 +103,38 @@ describe('status', (): void => {
       },
       defaultProbabilityConf
     );
-    expect(km.def).toBe(60);
-    km.weakenDef += 1; km.setDef();
+    expect(km2.atk).toBe(1);
+    
+    const sm2 = new Friend(
+      {
+        name: 'キラーマシン',
+        lv: 99,
+      },
+      0,
+      {
+        row: 0,
+        col: 0,
+      },
+      defaultProbabilityConf
+    );;
+    expect(km2.attack(sm2)).toBeTruthy();
+    expect(sm2.chp).toBe(145);
+
+  });
+  test('Friend: キラーマLv13防御力弱化', (): void => {
+    const km = new Friend(
+      {
+        name: 'キラーマシン',
+        lv: 13,
+        weakenDef: 1,
+      },
+      0,
+      {
+        row: 0,
+        col: 0,
+      },
+      defaultProbabilityConf
+    );
     expect(km.def).toBe(60*0.8);
     km.weakenDef += 1; km.setDef();
     expect(km.def).toBe(60*0.7);
@@ -133,7 +164,7 @@ describe('status', (): void => {
 
     km.getExp();
     km.getExp();
-    km.getExp();
+    km.getExp(22);
     
     km.getDamage(5);
     expect(km.killCount).toBe(3);
@@ -143,15 +174,66 @@ describe('status', (): void => {
     expect(km.chp).toBe(63);  // レベルアップでHP増えた分だけ回復しているか
   });
   test('attack hit', (): void => {
-    defaultProbabilityConf.attack = 1.0;
+    defaultProbabilityConf.basic.attack = 1.0;
     const sm0 = new Enemy({row: 0, col: 0}, 0, defaultProbabilityConf);
     const sm1 = new Enemy({row: 0, col: 0}, 0, defaultProbabilityConf);
     expect(sm0.attack(sm1)).toBeTruthy;
   });
   test('attack not hit', (): void => {
-    defaultProbabilityConf.attack = 0.0;
+    defaultProbabilityConf.basic.attack = 0.0;
     const sm0 = new Enemy({row: 0, col: 0}, 0, defaultProbabilityConf);
     const sm1 = new Enemy({row: 0, col: 0}, 0, defaultProbabilityConf);
     expect(sm0.attack(sm1)).toBeFalsy;
   });
+
+  test('fixed damgae', (): void => {
+    defaultProbabilityConf.basic.attack = 1.0;
+    const sm0 = new Enemy({row: 0, col: 0}, 0, defaultProbabilityConf);
+    const sm1 = new Enemy({row: 0, col: 0}, 0, defaultProbabilityConf);
+    sm0.attack(sm1, 25);
+    expect(sm1.chp).toBe(55-25);
+  });
+
+  test('get min and max damgae', (): void => {
+    defaultProbabilityConf.basic.attack = 1.0;
+    const sm0 = new Enemy({row: 0, col: 0}, 0, defaultProbabilityConf);
+    const sm1 = new Enemy({row: 0, col: 0}, 0, defaultProbabilityConf);
+    const [minDamage, maxDamage, meanDamage] = sm0.getMinAndMaxDamage(sm1);
+    expect(minDamage).toBe(Math.round(17*1.3*(35/36)**10*7/8));
+    expect(maxDamage).toBe(Math.round(17*1.3*(35/36)**10*9/8));
+  });
+
+  test('get min and max damgae', (): void => {
+    defaultProbabilityConf.basic.attack = 1.0;
+    const km1 = new Friend(
+      {
+        name: 'キラーマシン',
+        lv: 1,
+        weakenAtk: 8
+      },
+      0,
+      {
+        row: 0,
+        col: 0,
+      },
+      defaultProbabilityConf
+    );
+    const km2 = new Friend(
+      {
+        name: 'キラーマシン',
+        lv: 99,
+      },
+      0,
+      {
+        row: 0,
+        col: 0,
+      },
+      defaultProbabilityConf
+    );
+    const [minDamage, maxDamage, meanDamage] = km1.getMinAndMaxDamage(km2);
+    expect(minDamage).toBe(1);
+    expect(meanDamage).toBe(1);
+    expect(maxDamage).toBe(1);
+  });
+
 });

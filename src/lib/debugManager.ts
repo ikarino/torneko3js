@@ -59,6 +59,7 @@ export class DebugManager extends Manager {
       if (this.enemys.length === 0) { return; }
       this.turnNow += 1;
     }
+    this.killCount -= this.enemys.length;
   }
 
   turnEnemy(): void {

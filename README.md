@@ -17,7 +17,7 @@ yarn add torneko3js
 ```
 
 ### ブラウザの場合
-[sample/browser](https://github.com/ikarino/torneko3js/blob/master/sample/browser)を参照してください。  
+[example/browser](https://github.com/ikarino/torneko3js/tree/master/example/browser)を参照してください。  
 [browserify](http://browserify.org/)でbundle化しています。
 
 ### google spreadsheetの場合

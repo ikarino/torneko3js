@@ -1,4 +1,5 @@
 import pino from 'pino';
+import { ProbabilityConfig } from './interfaces';
 
 export const logger = pino({
   level: 'silent',
@@ -6,15 +7,17 @@ export const logger = pino({
   timestamp :false,
 });
 
-export const defaultProbabilityConf = {
-  attack: 0.92,
-  arrow: 0.88,
-  divide: 0.25,
+export const defaultProbabilityConf: ProbabilityConfig = {
+  basic: {
+    attack: 0.92,
+    arrow: 0.88,
+    divide: 0.25,
+  },
   hoimin: {
     skill: 0.3553, // kompota君の成果
     attack: 0.30,
-    move: 0.30,
-    moveTurn: 300,
+    move: 1.00,
+    moveTurn: 50,
   },
 
   // 隣接角抜けなし特技系

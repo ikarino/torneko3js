@@ -1,7 +1,6 @@
 // scsField.ts
 // 
 import { Place, SCSFieldInput } from './interfaces';
-import { logger } from './config';
 
 export class SCSField {
   col: number;
@@ -55,7 +54,7 @@ export class SCSField {
         const tPlace = {row: rowMe+drow, col: colMe+dcol};
         const tNumber = this.getField(tPlace);
         if (! isTarget(tNumber)) { continue; }       // not target
-        if (drow === 0 && dcol === 0) { continue; }  // myself
+        // if (drow === 0 && dcol === 0) { continue; }  // myself
 
         // 上下左右は無条件で追加
         if (dcol*drow === 0) {
@@ -95,7 +94,7 @@ export class SCSField {
         const tPlace = {row: rowMe+drow, col: colMe+dcol};
         const tNumber = this.getField(tPlace);
         if (! isTarget(tNumber)) { continue; }       // not target
-        if (drow === 0 && dcol === 0) { continue; }  // myself
+        // if (drow === 0 && dcol === 0) { continue; }  // myself
 
         // 上下左右は無条件で追加
         if (dcol*drow === 0) {
@@ -129,11 +128,15 @@ export class SCSField {
     const rowMe = place.row;
     const colMe = place.col;
     let target = -1;
+    /**
+     * 現状、敵キャラが射程のある技を使う予定は無い。
     const isTarget = myNumber >= 20 ? (
       (num: number) => [...Array(10)].map((_, i) => i+10).includes(num)
     ) : (
       (num: number) => (num >= 20)
     );
+     */
+    const isTarget = (num: number) => (num >= 20);
 
     // 左方向
     target = -1;

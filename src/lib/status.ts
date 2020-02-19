@@ -315,13 +315,3 @@ export const getBasicMonsterStatus = (name: string, lv: number): BasicMonsterSta
   };
 }
 
-export const getLvByDexp = (name: string, startLv: number, dexp: number): number => {
-  const msd0 = getBasicMonsterStatus(name, startLv);
-  for(let lv = startLv+1; lv < 100; lv++) {
-    const msd1 = getBasicMonsterStatus(name, lv);
-    if (msd1.exp - msd0.exp > dexp) {
-      return lv - 1;
-    }
-  }
-  throw new Error(`invalid input for getLvByDexp: name:${name}, startLv:${startLv}, dexp: ${dexp}`);
-}

@@ -1,4 +1,4 @@
-import { getLvByDexp, getBasicMonsterStatus } from "../src/status";
+import { getBasicMonsterStatus } from "../src/lib/status";
 
 describe('status', (): void => {
   test('getBasicMonsterStatus: キラーマLv13の能力値確認', (): void => {
@@ -33,9 +33,61 @@ describe('status', (): void => {
     expect(m.recovery).toBe(100);
     expect(m.exp).toBe(0);
   });
-  
-  test('getLvByDexp: 防御晩成は経験値1万でLv10になる', (): void => {
-    const newLv = getLvByDexp('キラーマシン', 1, 10000);
-    expect(newLv).toBe(10);
+  test('getBasicMonsterStatus: いたずらもぐらLv1の能力値確認', (): void => {
+    const m = getBasicMonsterStatus('いたずらもぐら', 1);
+    expect(m.mhp0).toBe(8);
+    expect(m.atk0).toBe(6);
+    expect(m.def0).toBe(5);
+    expect(m.recovery).toBe(50);
+    expect(m.exp).toBe(0);
+  });  
+  test('getBasicMonsterStatus: アトラスLv1の能力値確認', (): void => {
+    const m = getBasicMonsterStatus('アトラス', 1);
+    expect(m.mhp0).toBe(130);
+    expect(m.atk0).toBe(60);
+    expect(m.def0).toBe(48);
+    expect(m.recovery).toBe(100);
+    expect(m.exp).toBe(0);
+  });  
+  test('getBasicMonsterStatus: あやしいかげLv1の能力値確認', (): void => {
+    const m = getBasicMonsterStatus('あやしいかげ', 1);
+    expect(m.mhp0).toBe(5);
+    expect(m.atk0).toBe(20);
+    expect(m.def0).toBe(1);
+    expect(m.recovery).toBe(50);
+    expect(m.exp).toBe(0);
   });
+
+  test('getBasicMonsterStatus: ゴーレムLv1の能力値確認', (): void => {
+    const m = getBasicMonsterStatus('ゴーレム', 1);
+    expect(m.mhp0).toBe(50);
+    expect(m.atk0).toBe(20);
+    expect(m.def0).toBe(20);
+    expect(m.recovery).toBe(100);
+    expect(m.exp).toBe(0);
+  });
+  
+  test('getBasicMonsterStatus: スカイフロッグLv1の能力値確認', (): void => {
+    const m = getBasicMonsterStatus('スカイフロッグ', 1);
+    expect(m.mhp0).toBe(38);
+    expect(m.atk0).toBe(9);
+    expect(m.def0).toBe(10);
+    expect(m.recovery).toBe(50);
+    expect(m.exp).toBe(0);
+  });
+
+  test('getBasicMonsterStatus: あやしいかげLv1の能力値確認', (): void => {
+    const m = getBasicMonsterStatus('あやしいかげ', 1);
+    expect(m.mhp0).toBe(5);
+    expect(m.atk0).toBe(20);
+    expect(m.def0).toBe(1);
+    expect(m.recovery).toBe(50);
+    expect(m.exp).toBe(0);
+  });
+
+  test('getBasicMonsterStatus: 異常な入力', (): void => {
+    expect(() => getBasicMonsterStatus('fucky', 1)).toThrow(Error);
+    expect(() => getBasicMonsterStatus('キラーマシン', 0)).toThrow(Error);
+  });
+
 });

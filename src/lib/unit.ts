@@ -13,6 +13,7 @@ export class Unit {
   atk: number = -1;
   def: number = -1;
   readonly recovery: number;
+  readonly maximumLv: number;
   exp: number;
   readonly hpDope: number;
   readonly atkDope: number;
@@ -35,8 +36,9 @@ export class Unit {
     this.place = place;                                  // 位置座標[row, col]
 
     const status = getBasicMonsterStatus(inp.name, inp.lv);
-    this.recovery = status.recovery;  // 回復定数
-    this.exp = status.exp;            // 現在の経験値
+    this.recovery = status.recovery;   // 回復定数
+    this.exp = status.exp;             // 現在の経験値
+    this.maximumLv = status.maximumLv; // 最大LV
 
     this.setHP();
     this.setAtk();
@@ -93,7 +95,7 @@ export class Unit {
       logger.debug(`様子を見ている because ${this.name}'s atk is 0`)
       return false
     }
-    if (Math.random() < this.pConf.attack) {
+    if (Math.random() < this.pConf.basic.attack) {
       const damage = fixedDamage === 0 ? (
         Math.round(this.atk * 1.3 * Math.pow(35/36, enemy.def) * (Math.random()/4 + 7/8)) 
       ) : fixedDamage;
@@ -151,6 +153,8 @@ export class Friend extends Unit {
     this.killCount += 1;
     this.exp += exp;
     logger.debug(`get EXP`)
+    if(this.lv === this.maximumLv) return;
+
     // レベルアップ処理
     while(getBasicMonsterStatus(this.name, this.lv+1).exp < this.exp) {
       const status0 = getBasicMonsterStatus(this.name, this.lv);

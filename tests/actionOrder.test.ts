@@ -1,4 +1,4 @@
-import { getOrder, createPlaceList, viewer } from "../src/actionOrder";
+import { getOrder, createPlaceList, viewer } from "../src/lib/actionOrder";
 
 describe('status', (): void => {
   test('行動順の並び替え確認', (): void => {
@@ -29,6 +29,24 @@ describe('status', (): void => {
     expect(list1[1]).toStrictEqual({row: -1, col: 0});
     expect(list1[2]).toStrictEqual({row: 1, col: 0});
     expect(list1[3]).toStrictEqual({row: 0, col: 1});
+  });
+
+  test('expect throw', (): void => {
+    let inp = [
+      {data: 'fuck', place: {row: 999, col: 999}},
+      {data: 'fuck', place: {row: 1, col: 1}},
+    ];
+    expect(() => getOrder(inp)).toThrow(Error);
+    inp = [
+      {data: 'fuck', place: {row: 1, col: 1}},
+      {data: 'fuck', place: {row: 999, col: 999}},
+    ];
+    expect(() => getOrder(inp)).toThrow(Error);
+    inp = [
+      {data: 'fuck', place: {row: 1, col: 1}},
+      {data: 'fuck', place: {row: 1, col: 1}},
+    ];
+    getOrder(inp);
   });
 
   test('viewer', (): void => {

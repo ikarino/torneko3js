@@ -21,7 +21,7 @@
     "test": "jest",
     "build": "ttsc",
     "prepublishOnly": "npm run build",
-    "browser": "browserify -r ./src/index.ts:torneko3 -p [ tsify --noImplicitAny ] > sample/browser/torneko3.bundle.js"
+    "browser": "browserify -r ./src/lib/index.ts:torneko3 -p [ tsify --noImplicitAny ] > example/browser/torneko3.bundle.js"
   },
   "jest": {
     "moduleFileExtensions": [

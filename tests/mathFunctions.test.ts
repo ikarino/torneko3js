@@ -1,4 +1,4 @@
-import { sum, mean, std, getMeanAndStdFromArray } from "../src/mathFunctions";
+import { sum, mean, std, getMeanAndStdFromArray } from "../src/lib/mathFunctions";
 
 describe('mathFunction', (): void => {
   const arr1 = [1, 2, 3, 4];

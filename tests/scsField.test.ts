@@ -1,4 +1,4 @@
-import { SCSField } from "../src/scsField";
+import { SCSField } from "../src/lib/scsField";
 
 describe('SCSField', (): void => {
   const f = new SCSField({row: 5, col: 5, data: [
@@ -32,15 +32,15 @@ describe('SCSField', (): void => {
   test('findTargets friend=> enemy', (): void => {
     expect(f.findTargets({row: 2, col: 2})).toEqual([21, 22]);
   });
-  test('findTargets enemy=> empty', (): void => {
-    expect(f.findTargets({row: 2, col: 1}, true)).toEqual([
+  test('findVacants enemy=> empty', (): void => {
+    expect(f.findVacants({row: 2, col: 1})).toEqual([
       {row: 1, col: 1},
       {row: 3, col: 1},
       {row: 3, col: 2},
     ]);
   });
-  test('findTargets friend=> empty, kadonuke', (): void => {
-    expect(f.findTargets({row: 2, col: 2}, true, true)).toEqual([
+  test('findVacants friend=> kadonuke', (): void => {
+    expect(f.findVacants({row: 2, col: 2}, true)).toEqual([
       {row: 1, col: 1},
       {row: 3, col: 1},
       {row: 3, col: 2},
@@ -48,7 +48,7 @@ describe('SCSField', (): void => {
     ]);
   });
   test('findTargets friend=> enemy, kadonuke', (): void => {
-    const targets = f.findTargets({row: 2, col: 2}, false, true);
+    const targets = f.findTargets({row: 2, col: 2}, true);
     expect(targets.length).toBe(3);
     expect(targets).toContain(21);
     expect(targets).toContain(22);
@@ -96,5 +96,9 @@ describe('SCSField => findLineTargets', (): void => {
   test('find bottom left', (): void => {
     f.setField({row: 4, col: 3}, 1);
     expect(f.findLineTarget({row: 3, col: 3}, 1)).toBe(27);
+  });
+
+  test('probability 0 => returns 0', (): void => {
+    expect(f.findLineTarget({row: 3, col: 3}, 0, 100)).toBe(0);
   });
 });

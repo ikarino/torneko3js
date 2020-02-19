@@ -22,7 +22,7 @@ export interface SCSFriendInput {
 export interface SCSConfigInput {
   turn: number,
   trial: number,
-  pConf?: ProbabilityConfig,
+  pConf?: OverWriter,
 }
 
 export interface SCSInput {
@@ -120,10 +120,17 @@ export interface KaisekiDataFloor {
   trap: {[name: string]: number}
 }
 
+export interface OverWriter {
+  [key: string]: {[index: string]: number}
+}
+
 export interface ProbabilityConfig {
-  attack: number,        // 通常攻撃があたる確率
-  arrow: number,         // 投擲攻撃があたる確率
-  divide: number,        // スモールグールの分裂確率
+  [key: string]: {[index: string]: number},
+  basic: {
+    attack: number,        // 通常攻撃があたる確率
+    arrow: number,         // 投擲攻撃があたる確率
+    divide: number,        // スモールグールの分裂確率
+  },
   hoimin: {              // ホイミスライム
     skill: number,       // 特技使用率
     attack: number,      // ホイミスライムの非封印時攻撃確率

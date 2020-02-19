@@ -1,0 +1,11 @@
+{
+  "friends": [],
+  "field": {
+    "col": 1, "row": 1,
+    "data": [1]
+  },
+  "config": {
+    "trial": 1,
+    "turn": 1
+  }
+}

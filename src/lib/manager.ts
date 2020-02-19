@@ -3,7 +3,15 @@
 
 import { Unit, Friend, Enemy } from './unit';
 import { SCSField } from './scsField';
-import { Place, SCSInput, ProbabilityConfig, SCSConfigInput, SCSSummarizedOutput, SCSTrialOutput } from './interfaces';
+import { 
+  Place,
+  SCSInput,
+  ProbabilityConfig,
+  SCSConfigInput,
+  SCSSummarizedOutput,
+  SCSTrialOutput,
+  OverWriter
+} from './interfaces';
 import { 
   defaultProbabilityConf,
   monstersSkillAdjacent,
@@ -28,6 +36,26 @@ const addPlace = (place1: Place, place2: Place): Place => {
     col: place1.col + place2.col
   }
 };
+
+const overWriteDefaultProbabilityConfig = (conf: OverWriter): ProbabilityConfig => {
+  let c = defaultProbabilityConf;
+
+  try {
+    for(const k of Object.keys(conf)) {
+      const values = conf[k];
+      for(const kk of Object.keys(values)) {
+        const value = values[kk];
+        c[k][kk] = value;
+        logger.debug(`pConf.${k}.${kk} was overwrited: ${value}`);
+      }
+    }
+  } catch (e) {
+    console.log('invalid input in config.pConf');
+    throw e;
+  }
+
+  return c;
+}
   
 export class Manager {
   inp: SCSInput;
@@ -40,15 +68,10 @@ export class Manager {
   field: SCSField = new SCSField({row: 0, col: 0, data: []});
   trialOutputs: SCSTrialOutput[];
   constructor(inp: SCSInput) {
-    try {
-      checkInp(inp);
-    } catch(e) {
-      console.log("Error in input: " + e);
-      process.exit(1);
-    }
+    checkInp(inp); // may throw error
     
     this.inp = inp;
-    this.pConf = inp.config.pConf ? inp.config.pConf : defaultProbabilityConf;
+    this.pConf = inp.config.pConf ? overWriteDefaultProbabilityConfig(inp.config.pConf) : defaultProbabilityConf;
     this.config = this.inp.config;
     this.trialOutputs = [];
   }
@@ -127,7 +150,7 @@ export class Manager {
     return this.enemys.filter(e => e.num === num)[0];
   };
 
-  private addEnemy(place: Place, probability: number = this.pConf.divide) : void {
+  private addEnemy(place: Place, probability: number = this.pConf.basic.divide) : void {
     if (Math.random() < probability) {
       this.enemys.push(new Enemy(place, this.killCount, this.pConf));
       this.field.setField(place, this.killCount+20);
@@ -167,6 +190,7 @@ export class Manager {
 
       this.turnNow += 1;
     }
+    this.killCount -= this.enemys.length;
   }
 
   protected turn(): void {
@@ -420,7 +444,7 @@ export class Manager {
       return this.actionNormal(f);
     }
     // 2. 矢が外れた時
-    if (Math.random() > this.pConf.arrow) {
+    if (Math.random() > this.pConf.basic.arrow) {
       logger.debug("  => but missed");
       return true;
     }
@@ -534,7 +558,7 @@ export class Manager {
       if (Math.random() < this.pConf.hoimin.attack) {
         let enemy = this.getEnemyByNumber(enemyId - 20);
         this.attack(f, enemy);
-        logger.log(`  => attacked : @[${enemy.place.row}, ${enemy.place.col}]`);
+        logger.debug(`  => attacked : @[${enemy.place.row}, ${enemy.place.col}]`);
         return returnValue;
       }
       logger.debug(`not attacked.`);
@@ -574,7 +598,6 @@ export class Manager {
       }
     }
 
-    this.killCount -= this.enemys.length;
     return {
       result: {
         finishState,
