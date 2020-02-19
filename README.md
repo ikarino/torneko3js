@@ -106,7 +106,7 @@ console.log(m.toJson());
 
 ## 入力の構成
 入力はJSON形式です。  
-詳細は[src/interfaces.ts](https://github.com/ikarino/torneko3js/blob/master/src/interfaces.ts)を参照してください。  
+詳細は[src/lib/interfaces.ts](https://github.com/ikarino/torneko3js/blob/master/src/lib/interfaces.ts)を参照してください。  
 以下の3つのパートに分かれています。
 - friends: 仲間の情報（種類・レベル・弱化状態等）
 - field: 仲間・壁・種スモの配置を表すフィールド
@@ -142,7 +142,7 @@ console.log(m.toJson());
 
 ## 出力の構成
 1試行あたりの出力もJSON形式です。  
-詳細は[src/interfaces.ts](https://github.com/ikarino/torneko3js/blob/master/src/interfaces.ts)を参照してください。  
+詳細は[src/lib/interfaces.ts](https://github.com/ikarino/torneko3js/blob/master/src/lib/interfaces.ts)を参照してください。  
 以下の3つのパートに分かれています。
 - result: 終了理由、経過ターン数等
 - exp: 経験値関係
