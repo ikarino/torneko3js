@@ -59,7 +59,7 @@ export class Unit {
       // 弱化回数分だけ0.5倍する
       atk *= 0.5 ** this.weakenAtk;
     }
-    if (this.weakenAtk === 9) {
+    if (this.weakenAtk >= 9) {
       // 9回弱化されている場合は攻撃力0
       atk = 0;
     }
@@ -84,6 +84,8 @@ export class Unit {
       def *= 0.2;
     } else if (this.weakenDef === 6) {
       def *= 0.001;
+    } else if (this.weakenDef === 7) {
+      def = 0;
     }
     // 小数点以下を切り捨てる
     def = Math.floor(def);

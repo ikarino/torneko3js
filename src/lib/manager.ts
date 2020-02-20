@@ -465,7 +465,7 @@ export class Manager {
     // 1. 確率的に矢を打たなかった、もしくは矢の対象が見つからなかったとき
     if (num === 0) {
       logger.debug('  => skill not triggered or target not found');
-      return this.actionNormal(f);
+      return this.actionNormal(f);  // 通常攻撃行動に移る
     }
     // 2. 矢が外れた時
     if (Math.random() > this.pConf.basic.arrow) {
@@ -479,14 +479,19 @@ export class Manager {
     logger.debug(`    - target: ${num} at [${target.place.row}, ${target.place.col}]`);
 
     // 4. ダメージ計算
-    // TODO(投擲系の計算式が不明。適当実装。)
-    let damage = f.atk * (1 + (arrowPower - 8) / 16) * Math.pow(35 / 36, target.def);
+    // [TODO]投擲系の計算式が不明。
+    // シレンの式を代用して実装。
+    // http://twist.jpn.org/sfcsiren/index.php?%E3%83%80%E3%83%A1%E3%83%BC%E3%82%B8%E8%A8%88%E7%AE%97%E5%BC%8F#m266135b
+    // 基本攻撃力+{基本攻撃力×(矢の強さ-8)/16の小数点以下を四捨五入した値}
+    // トルネコ3とシレンの屋の攻撃力の差を吸収するために"-8"を"-3"にしている。
+    let damage = f.atk + Math.round(f.atk * (arrowPower - 3) / 16);
+    damage *= Math.pow(35 / 36, target.def);
     damage = Math.round(damage * (Math.random() / 4 + 7 / 8));
     target.chp -= damage;
     logger.debug(`    - damage: ${damage}`);
 
     // 5. 経験値処理
-    if (target.chp < 0) {
+    if (num >= 20 && target.chp < 0) {
       f.getExp();
       this.removeEnemy(this.getEnemyByNumber(num - 20));
       return true;
@@ -499,6 +504,37 @@ export class Manager {
     const wasAbleToDivide = this.divide(target);
     if (!wasAbleToDivide) {
       f.divisionLossCount += 1;
+    }
+    return true;
+  }
+
+  /**
+   * ドラゴンの行動
+   * [TODO]炎って分裂しないよね？
+   * @param f ドラゴン
+   */
+  private actionDragon(f: Friend): boolean {
+    logger.debug('# monster: Dragon');
+    const skillInfo = this.pConf.drango;
+    const num = this.field.findLineTarget(f.place, skillInfo.skill, skillInfo.range);
+
+    // 1. 確率的に炎を吐かなかった、もしくは炎の対象が見つからなかったとき
+    if (num === 0) {
+      logger.debug('  => skill not triggered or target not found');
+      return this.actionNormal(f);  // 通常攻撃行動に移る
+    }
+
+    // 2. 炎のダメージ処理
+    logger.debug(`  => targetNumber: ${num}`);
+    const target = num < 20 ? this.friends[num - 10] : this.getEnemyByNumber(num - 20);
+    logger.debug(`    - target: ${num} at [${target.place.row}, ${target.place.col}]`);
+
+    target.chp -= 20;
+
+    // 3. 経験値処理
+    if (num >= 20 && target.chp < 0) {
+      f.getExp();
+      this.removeEnemy(this.getEnemyByNumber(num - 20));
     }
     return true;
   }

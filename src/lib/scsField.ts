@@ -32,8 +32,7 @@ export class SCSField {
   /**
    * 周囲から特技等の対象を探す
    * @param place 対象を探すキャラの場所
-   * @param findEmpty true/false = 空白を探す/敵を探す
-   * @param includeKado 角抜け位置を含めるかどうか
+   * @param withCorner 角抜け位置を含めるかどうか
    */
   findTargets(place: Place, withCorner = false): number[] {
     const myNumber = this.getField(place);
@@ -74,9 +73,7 @@ export class SCSField {
   }
 
   /**
-   * 周囲から特技等の対象や場所を探す
-   * TODO
-   * any[]は実際number[] or Place[] なのだけれど、うまく書く方法は無いのかな？
+   * 周囲から空白の場所を探す
    * @param place 対象を探すキャラの場所
    * @param withCorner 角抜け位置を含めるかどうか
    */
@@ -116,9 +113,8 @@ export class SCSField {
   }
   /**
    * 射程の長い特技を使用するキャラの、特技適用先を返す。
-   * 左、左上、上、・・・の順に判定しているが、この順序が正しいか要調査。
+   * [TODO]左、左上、上、・・・の順に判定しているが、この順序が正しいか要調査。
    * 特技の貫通はしない前提で、誤射も考慮した最近接している特技適用先1体を返す。
-   *
    * @param place 特技を使うモンスターの座標
    * @param probability 特技使用率（1体当たり）
    * @param range 射程
