@@ -1,10 +1,12 @@
 import pino from 'pino';
 import { ProbabilityConfig } from './interfaces';
 
+export const DefaultNumSumoLimit = 9;
+
 export const logger = pino({
   level: 'silent',
   base: null,
-  timestamp :false,
+  timestamp: false,
 });
 
 export const defaultProbabilityConf: ProbabilityConfig = {
@@ -15,8 +17,8 @@ export const defaultProbabilityConf: ProbabilityConfig = {
   },
   hoimin: {
     skill: 0.3553, // kompota君の成果
-    attack: 0.30,
-    move: 1.00,
+    attack: 0.3,
+    move: 1.0,
     moveTurn: 50,
   },
 
@@ -34,13 +36,13 @@ export const defaultProbabilityConf: ProbabilityConfig = {
     skill: 0.26,
   },
   haneji: {
-    skill: 0.26,  // 出典なし
-  },  
+    skill: 0.26, // 出典なし
+  },
   mister: {
     skill: 0.12,
   },
   isshi: {
-    skill: 0.10,
+    skill: 0.1,
   },
   flida: {
     skill: 0.22,
@@ -48,48 +50,50 @@ export const defaultProbabilityConf: ProbabilityConfig = {
   rangas: {
     skill: 0.22,
   },
+  rayman: {
+    skill: 0.2, // 出典なし
+  },
 
   // 隣接角抜けあり特技系
   lovelace: {
     skill: 0.2,
   },
   dragosu: {
-    skill: 0.2
+    skill: 0.2,
   },
   drataru: {
-    skill: 0.2
+    skill: 0.2,
   },
 
   // 視界影響なし直線上特技
   lily: {
     skill: 0.5,
-    range: 10,  // 射程
+    range: 10, // 射程
   },
   niper: {
     skill: 0.37,
-    range: 10,  // 射程
+    range: 10, // 射程
   },
   drango: {
     skill: 0.25,
-    range: Infinity
+    range: Infinity,
   },
 
   // さつじんきorエリミネーター
   kororin: {
     omoikkiri: 0.2,
-    tsukon: 0.2, 
+    tsukon: 0.2,
   },
   emily: {
     omoikkiri: 0.2,
-    tsukon: 0.2, 
-  },  
-  
+    tsukon: 0.2,
+  },
+
   // 攻撃+特殊効果系
   baburusu: {
     skill: 0.5,
   },
-}
-
+};
 
 export const monstersSkillAdjacentWOCorner: string[] = [
   'おばけキノコ',
@@ -100,11 +104,13 @@ export const monstersSkillAdjacentWOCorner: string[] = [
   'フライングデビル',
   'ランガー',
   'ミステリードール',
-  'いしにんぎょう'
+  'いしにんぎょう',
 ];
 export const monstersSkillAdjacentWCorner: string[] = [
   'スライムブレス',
   'ドラゴスライム',
-  'ドラゴメタル'
+  'ドラゴメタル',
 ];
-export const monstersSkillAdjacent = monstersSkillAdjacentWOCorner.concat(monstersSkillAdjacentWCorner);
+export const monstersSkillAdjacent = monstersSkillAdjacentWOCorner.concat(
+  monstersSkillAdjacentWCorner
+);

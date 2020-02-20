@@ -3,21 +3,22 @@
 
 import { Unit, Friend, Enemy } from './unit';
 import { SCSField } from './scsField';
-import { 
+import {
   Place,
   SCSInput,
   ProbabilityConfig,
   SCSConfigInput,
   SCSSummarizedOutput,
   SCSTrialOutput,
-  OverWriter
+  OverWriter,
 } from './interfaces';
-import { 
+import {
+  DefaultNumSumoLimit,
   defaultProbabilityConf,
   monstersSkillAdjacent,
   monstersSkillAdjacentWCorner,
   monstersSkillAdjacentWOCorner,
-  logger
+  logger,
 } from './config';
 import checkInp from './checkInp';
 import { mean, std, getMeanAndStdFromArray } from './mathFunctions';
@@ -29,21 +30,21 @@ import { mean, std, getMeanAndStdFromArray } from './mathFunctions';
 const randint = (n: number): number => {
   return Math.floor(Math.random() * Math.floor(n));
 };
-  
+
 const addPlace = (place1: Place, place2: Place): Place => {
   return {
     row: place1.row + place2.row,
-    col: place1.col + place2.col
-  }
+    col: place1.col + place2.col,
+  };
 };
 
 const overWriteDefaultProbabilityConfig = (conf: OverWriter): ProbabilityConfig => {
   let c = defaultProbabilityConf;
 
   try {
-    for(const k of Object.keys(conf)) {
+    for (const k of Object.keys(conf)) {
       const values = conf[k];
-      for(const kk of Object.keys(values)) {
+      for (const kk of Object.keys(values)) {
         const value = values[kk];
         c[k][kk] = value;
         logger.debug(`pConf.${k}.${kk} was overwrited: ${value}`);
@@ -55,8 +56,8 @@ const overWriteDefaultProbabilityConfig = (conf: OverWriter): ProbabilityConfig 
   }
 
   return c;
-}
-  
+};
+
 export class Manager {
   inp: SCSInput;
   config: SCSConfigInput;
@@ -65,13 +66,15 @@ export class Manager {
   enemys: Enemy[] = [];
   killCount: number = 0;
   turnNow: number = 0;
-  field: SCSField = new SCSField({row: 0, col: 0, data: []});
+  field: SCSField = new SCSField({ row: 0, col: 0, data: [] });
   trialOutputs: SCSTrialOutput[];
   constructor(inp: SCSInput) {
     checkInp(inp); // may throw error
-    
+
     this.inp = inp;
-    this.pConf = inp.config.pConf ? overWriteDefaultProbabilityConfig(inp.config.pConf) : defaultProbabilityConf;
+    this.pConf = inp.config.pConf
+      ? overWriteDefaultProbabilityConfig(inp.config.pConf)
+      : defaultProbabilityConf;
     this.config = this.inp.config;
     this.trialOutputs = [];
   }
@@ -91,25 +94,28 @@ export class Manager {
 
     for (const [order, friend] of this.inp.friends.entries()) {
       // placeを探す
-      const FieldIndex = this.inp.field.data.findIndex(m => m === order+10);
+      const FieldIndex = this.inp.field.data.findIndex(m => m === order + 10);
       const place = {
-        row: Math.floor(FieldIndex/this.inp.field.col),
-        col: FieldIndex%this.inp.field.col
+        row: Math.floor(FieldIndex / this.inp.field.col),
+        col: FieldIndex % this.inp.field.col,
       };
       this.friends.push(new Friend(friend, order, place, this.pConf));
     }
-  
+
     // Enemyの読み込み
-    const enemyFieldIndex = this.inp.field.data.reduce((accumulator: number[], currentValue, index) => {
-      if (currentValue === 9) {
-        accumulator.push(index);
-      }
-      return accumulator;
-    }, [])
+    const enemyFieldIndex = this.inp.field.data.reduce(
+      (accumulator: number[], currentValue, index) => {
+        if (currentValue === 9) {
+          accumulator.push(index);
+        }
+        return accumulator;
+      },
+      []
+    );
     for (const FieldIndex of enemyFieldIndex) {
       const place = {
-        row: Math.floor(FieldIndex/this.inp.field.col), 
-        col: FieldIndex%this.inp.field.col
+        row: Math.floor(FieldIndex / this.inp.field.col),
+        col: FieldIndex % this.inp.field.col,
       };
       this.addEnemy(place, 1.0);
     }
@@ -121,19 +127,29 @@ export class Manager {
    * @param {Unit} sumo 攻撃されたスモグル（敵味方問わず）
    */
   private divide(sumo: Unit): boolean {
+    if (sumo.isSealed) {
+      logger.debug(`divided but [row: ${sumo.place.row}, col: ${sumo.place.col}] was sealed`);
+      return false;
+    }
+    const numSumoLimit = this.config.numSumoLimit ? this.config.numSumoLimit : DefaultNumSumoLimit;
+    if (this.enemys.length >= numSumoLimit) {
+      logger.debug(`divided but number of enemys reached maximum: ${numSumoLimit}`);
+      return false;
+    }
+
     const dplaceList = [
-      {row: -1, col: 0},  // 0: 上
-      {row: -1, col: -1}, // 1: 左上
-      {row: 0, col: -1},  // 2: 左
-      {row: 1, col: -1},  // 3: 左下
-      {row: 1, col: 0},   // 4: 下
-      {row: 1, col: 1},   // 5: 右下
-      {row: 0, col: 1},   // 6: 右
-      {row: -1,col: 1},   // 7: 右上
+      { row: -1, col: 0 }, // 0: 上
+      { row: -1, col: -1 }, // 1: 左上
+      { row: 0, col: -1 }, // 2: 左
+      { row: 1, col: -1 }, // 3: 左下
+      { row: 1, col: 0 }, // 4: 下
+      { row: 1, col: 1 }, // 5: 右下
+      { row: 0, col: 1 }, // 6: 右
+      { row: -1, col: 1 }, // 7: 右上
     ];
-    
-    const initialIndex = randint(4)*2;  // 0, 2, 4, 6 = 上, 左, 下, 右
-    for(let relativeIndex = 0; relativeIndex < 8; relativeIndex++ ) {
+
+    const initialIndex = randint(4) * 2; // 0, 2, 4, 6 = 上, 左, 下, 右
+    for (let relativeIndex = 0; relativeIndex < 8; relativeIndex++) {
       let index = relativeIndex + initialIndex;
       index = index > 7 ? index - 8 : index;
 
@@ -144,16 +160,16 @@ export class Manager {
       }
     }
     return false;
-  };
+  }
 
   getEnemyByNumber(num: number): Enemy {
     return this.enemys.filter(e => e.num === num)[0];
-  };
+  }
 
-  private addEnemy(place: Place, probability: number = this.pConf.basic.divide) : void {
+  private addEnemy(place: Place, probability: number = this.pConf.basic.divide): void {
     if (Math.random() < probability) {
       this.enemys.push(new Enemy(place, this.killCount, this.pConf));
-      this.field.setField(place, this.killCount+20);
+      this.field.setField(place, this.killCount + 20);
       this.killCount += 1;
       logger.debug(`divided into [${place.row}, ${place.col}]`);
     }
@@ -168,7 +184,7 @@ export class Manager {
    *          └── turnFriend
    */
   runAllTrial(): void {
-    for (let trial = 0; trial < this.config.trial; trial ++) {
+    for (let trial = 0; trial < this.config.trial; trial++) {
       this.trial();
       this.trialOutputs.push(this.toJson());
     }
@@ -186,7 +202,9 @@ export class Manager {
         }
       }
       // スモールグールが消えていないかチェック
-      if (this.enemys.length === 0) { return; }
+      if (this.enemys.length === 0) {
+        return;
+      }
 
       this.turnNow += 1;
     }
@@ -210,11 +228,11 @@ export class Manager {
     const targets = this.field.findTargets(enemy.place);
     if (targets.length !== 0) {
       const target = targets[randint(targets.length)];
-      const friend = this.friends[target-10]
+      const friend = this.friends[target - 10];
       const result = enemy.attack(friend);
       // 対象がスモールグールだった場合は分裂処理
-      if (friend.name === 'スモールグール' && ! friend.isSealed && result) {
-        this.divide(this.friends[target-10]);
+      if (friend.name === 'スモールグール' && result) {
+        this.divide(this.friends[target - 10]);
       }
       return; // 攻撃したら終了
     }
@@ -223,7 +241,7 @@ export class Manager {
     if (emptyPlaces.length !== 0) {
       const place = emptyPlaces[randint(emptyPlaces.length)];
       this.field.setField(enemy.place, 0);
-      this.field.setField(place, enemy.num+20);
+      this.field.setField(place, enemy.num + 20);
       enemy.place = place;
     }
   }
@@ -322,35 +340,35 @@ export class Manager {
       const enemy = this.getEnemyByNumber(target - 20);
 
       // 特技を使う場合
-      switch(f.name) {
+      switch (f.name) {
         case 'おばけキノコ':
-          if (Math.random() < this.pConf.kinoko.skill ) {
+          if (Math.random() < this.pConf.kinoko.skill) {
             enemy.weakenAtk += 1;
             enemy.setAtk();
             return true;
           }
           break;
         case 'メイジももんじゃ':
-          if (Math.random() < this.pConf.merumon.skill ) {
+          if (Math.random() < this.pConf.merumon.skill) {
             enemy.isSealed = true;
             return true;
           }
           break;
         case 'メイジキメラ':
-          if (Math.random() < this.pConf.mekira.skill ) {
+          if (Math.random() < this.pConf.mekira.skill) {
             enemy.isSealed = true;
             return true;
           }
           break;
         case 'ハエまどう':
-          if (Math.random() < this.pConf.haeru.skill ) {
-            enemy.chp = Math.ceil(enemy.chp/4);
+          if (Math.random() < this.pConf.haeru.skill) {
+            enemy.chp = Math.ceil(enemy.chp / 4);
             return true;
           }
           break;
         case 'はねせんにん':
-          if (Math.random() < this.pConf.haneji.skill ) {
-            enemy.chp = Math.ceil(enemy.chp/2);
+          if (Math.random() < this.pConf.haneji.skill) {
+            enemy.chp = Math.ceil(enemy.chp / 2);
             return true;
           }
           break;
@@ -366,10 +384,16 @@ export class Manager {
             return true;
           }
           break;
+        case 'キングマーマン':
+          if (Math.random() < f.pConf.rangas.skill) {
+            this.attack(f, enemy, 25);
+            return true;
+          }
+          break;
         case 'ミステリードール':
           if (Math.random() < f.pConf.mister.skill) {
             if (randint(2) === 0) {
-              enemy.chp = Math.ceil(enemy.chp/2);
+              enemy.chp = Math.ceil(enemy.chp / 2);
             } else {
               enemy.weakenAtk += 1;
               enemy.setAtk();
@@ -394,7 +418,7 @@ export class Manager {
             if (enemy.chp <= 0) {
               f.getExp();
               this.removeEnemy(enemy);
-            } 
+            }
             return true;
           }
           break;
@@ -404,22 +428,22 @@ export class Manager {
             if (enemy.chp <= 0) {
               f.getExp();
               this.removeEnemy(enemy);
-            } 
+            }
             return true;
           }
-          break
+          break;
         case 'ドラゴメタル':
           if (Math.random() < f.pConf.drataru.skill) {
             enemy.chp -= 20;
             if (enemy.chp <= 0) {
               f.getExp();
               this.removeEnemy(enemy);
-            } 
+            }
             return true;
           }
-          break
+          break;
         default:
-          throw new Error("skill not implemented: "+ f.name);
+          throw new Error('skill not implemented: ' + f.name);
       }
     }
 
@@ -433,38 +457,38 @@ export class Manager {
    */
   private actionArrow(f: Friend): boolean {
     logger.debug('# monster with arrow skill');
-    const skillInfo = f.name === "リリパット" ? this.pConf.lily : this.pConf.niper;
-    const arrowPower = f.name === "リリパット" ? 0 : 3; // TODO
+    const skillInfo = f.name === 'リリパット' ? this.pConf.lily : this.pConf.niper;
+    const arrowPower = f.name === 'リリパット' ? 0 : 3; // TODO
 
     const num = this.field.findLineTarget(f.place, skillInfo.skill, skillInfo.range);
 
     // 1. 確率的に矢を打たなかった、もしくは矢の対象が見つからなかったとき
     if (num === 0) {
-      logger.debug("  => skill not triggered or target not found");
+      logger.debug('  => skill not triggered or target not found');
       return this.actionNormal(f);
     }
     // 2. 矢が外れた時
     if (Math.random() > this.pConf.basic.arrow) {
-      logger.debug("  => but missed");
+      logger.debug('  => but missed');
       return true;
     }
 
     // 3. 矢が当たった時
     logger.debug(`  => targetNumber: ${num}`);
-    const target = num < 20 ? this.friends[num-10] : this.getEnemyByNumber(num-20);
+    const target = num < 20 ? this.friends[num - 10] : this.getEnemyByNumber(num - 20);
     logger.debug(`    - target: ${num} at [${target.place.row}, ${target.place.col}]`);
 
     // 4. ダメージ計算
     // TODO(投擲系の計算式が不明。適当実装。)
-    let damage = f.atk * (1 + (arrowPower-8)/16) * Math.pow(35/36, target.def);
-    damage = Math.round(damage * (Math.random()/4 + 7/8));
+    let damage = f.atk * (1 + (arrowPower - 8) / 16) * Math.pow(35 / 36, target.def);
+    damage = Math.round(damage * (Math.random() / 4 + 7 / 8));
     target.chp -= damage;
     logger.debug(`    - damage: ${damage}`);
 
     // 5. 経験値処理
     if (target.chp < 0) {
       f.getExp();
-      this.removeEnemy(this.getEnemyByNumber(num-20));
+      this.removeEnemy(this.getEnemyByNumber(num - 20));
       return true;
     }
 
@@ -491,7 +515,7 @@ export class Manager {
 
       const result = this.attack(f, enemy); // 攻撃1回目
       if (result === 'killed') return true; // 一回目で倒したら終了
-      this.attack(f, enemy);                // 攻撃2回目
+      this.attack(f, enemy); // 攻撃2回目
       return true;
     }
     return false;
@@ -514,16 +538,24 @@ export class Manager {
     let hoimiTargets = [];
     for (let drow of [-1, 0, 1]) {
       for (let dcol of [-1, 0, 1]) {
-        const place = addPlace(f.place, {row: drow, col: dcol});
+        const place = addPlace(f.place, { row: drow, col: dcol });
         const number = this.field.getField(place);
-        if (drow === 0 && dcol === 0) { continue; }  // me
+        if (drow === 0 && dcol === 0) {
+          continue;
+        } // me
 
-        if (10 <= number && number <= 19) {          // friends
-          let unit = this.friends[number-10];
-          if (unit.chp < unit.mhp) { hoimiTargets.push(unit); }
-        } else if (number >= 20) {                   // enemys
-          let unit = this.getEnemyByNumber(number-20);
-          if (unit.chp < unit.mhp) { hoimiTargets.push(unit); }
+        if (10 <= number && number <= 19) {
+          // friends
+          let unit = this.friends[number - 10];
+          if (unit.chp < unit.mhp) {
+            hoimiTargets.push(unit);
+          }
+        } else if (number >= 20) {
+          // enemys
+          let unit = this.getEnemyByNumber(number - 20);
+          if (unit.chp < unit.mhp) {
+            hoimiTargets.push(unit);
+          }
         }
       }
     }
@@ -541,11 +573,13 @@ export class Manager {
     if (execSkill) {
       logger.debug(`  => did Hoimi`);
       for (let target of hoimiTargets) {
-        logger.debug(`  - target@[${target.place.row}, ${target.place.col}]`)
+        logger.debug(`  - target@[${target.place.row}, ${target.place.col}]`);
         target.chp += 25;
-        if (target.chp > target.mhp) { target.chp = target.mhp; }
+        if (target.chp > target.mhp) {
+          target.chp = target.mhp;
+        }
       }
-      return returnValue;  // ホイミを発動した場合はここで抜ける
+      return returnValue; // ホイミを発動した場合はここで抜ける
     }
 
     // 3.
@@ -569,19 +603,21 @@ export class Manager {
     returnValue = returnValue || !!vacantTargets.length;
     logger.debug(`Vacant places: ${vacantTargets.length}`);
     if (
-      !f.isSticked &&                            // ここで待っててではない
-      Math.random() < this.pConf.hoimin.move &&    // 移動確率
+      !f.isSticked && // ここで待っててではない
+      Math.random() < this.pConf.hoimin.move && // 移動確率
       this.turnNow > this.pConf.hoimin.moveTurn && // 移動開始ターン
-      !!vacantTargets.length                     // 移動場所がある
-      ) {
-        const newPlace = vacantTargets[randint(vacantTargets.length)];
-        logger.debug(`  => moved from [${f.place.row}, ${f.place.col}] to [${newPlace.row}, ${newPlace.col}]`);
-        this.field.setField(f.place, 0);
-        this.field.setField(newPlace, 10 + this.friends.indexOf(f));
-        f.place = newPlace;
-        // TODO
-        // 移動は「待ち」でなかったと判断すべきだろうか。
-        return returnValue;
+      !!vacantTargets.length // 移動場所がある
+    ) {
+      const newPlace = vacantTargets[randint(vacantTargets.length)];
+      logger.debug(
+        `  => moved from [${f.place.row}, ${f.place.col}] to [${newPlace.row}, ${newPlace.col}]`
+      );
+      this.field.setField(f.place, 0);
+      this.field.setField(newPlace, 10 + this.friends.indexOf(f));
+      f.place = newPlace;
+      // TODO
+      // 移動は「待ち」でなかったと判断すべきだろうか。
+      return returnValue;
     }
 
     return returnValue;
@@ -605,15 +641,15 @@ export class Manager {
         orderOfKilledFriends: this.friends.filter(f => f.chp < 0).map(f => f.order),
       },
       exp: {
-        total: this.killCount*22,
-        perTurn: this.killCount*22/this.turnNow,
-        perMonster: this.friends.map(f => f.killCount*22),                
-        perMonsterPerTurn: this.friends.map(f => f.killCount*22/this.turnNow),
+        total: this.killCount * 22,
+        perTurn: (this.killCount * 22) / this.turnNow,
+        perMonster: this.friends.map(f => f.killCount * 22),
+        perMonsterPerTurn: this.friends.map(f => (f.killCount * 22) / this.turnNow),
       },
       loss: {
         action: this.friends.map(f => f.actionLossCount),
         division: this.friends.map(f => f.divisionLossCount),
-      }
+      },
     };
   }
 
@@ -622,8 +658,8 @@ export class Manager {
    */
   summarizeOutputs(): SCSSummarizedOutput {
     let countOfKilledFriends = new Array<number>(this.friends.length).fill(0);
-    for(const output of this.trialOutputs) {
-      for(const order of output.result.orderOfKilledFriends) {
+    for (const output of this.trialOutputs) {
+      for (const order of output.result.orderOfKilledFriends) {
         countOfKilledFriends[order]++;
       }
     }
@@ -639,20 +675,19 @@ export class Manager {
           mean: mean(this.trialOutputs.map(o => o.result.turnPassed)),
           std: std(this.trialOutputs.map(o => o.result.turnPassed)),
         },
-        countOfKilledFriends
+        countOfKilledFriends,
       },
       exp: {
         total: {
           mean: mean(this.trialOutputs.map(o => o.exp.total)),
           std: std(this.trialOutputs.map(o => o.exp.total)),
         },
-        perMonster: getMeanAndStdFromArray(this.trialOutputs.map(o => o.exp.perMonster))
+        perMonster: getMeanAndStdFromArray(this.trialOutputs.map(o => o.exp.perMonster)),
       },
       loss: {
         action: getMeanAndStdFromArray(this.trialOutputs.map(o => o.loss.action)),
         division: getMeanAndStdFromArray(this.trialOutputs.map(o => o.loss.division)),
-      }
-    }
+      },
+    };
   }
-
 }

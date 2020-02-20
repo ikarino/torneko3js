@@ -22,6 +22,7 @@ export interface SCSFriendInput {
 export interface SCSConfigInput {
   turn: number,
   trial: number,
+  numSumoLimit?: number,
   pConf?: OverWriter,
 }
 
@@ -164,6 +165,9 @@ export interface ProbabilityConfig {
     skill: number,
   },
   rangas: {              // ランガー
+    skill: number,
+  },
+  rayman: {              // キングマーマン
     skill: number,
   },
 

@@ -5,18 +5,18 @@ import { Place } from './interfaces';
 
 const colWeight = (col: number): number => {
   if (col < 0) {
-    return -1/col;
+    return -1 / col;
   } else {
     return -col;
   }
-}
+};
 
 export const createPlaceList = (lap: number): Place[] => {
   let list: Place[] = [];
-  for(let col = -lap; col <= lap; col++) {
-    for(let row = -lap; row <= lap; row++) {
-      if(Math.abs(col) + Math.abs(row) === lap) {
-        list.push({row, col})
+  for (let col = -lap; col <= lap; col++) {
+    for (let row = -lap; row <= lap; row++) {
+      if (Math.abs(col) + Math.abs(row) === lap) {
+        list.push({ row, col });
       }
     }
   }
@@ -25,10 +25,10 @@ export const createPlaceList = (lap: number): Place[] => {
     const cw1 = colWeight(p1.col);
     const cw2 = colWeight(p2.col);
     if (cw1 > cw2) {
-      return -1
+      return -1;
     }
     if (cw1 < cw2) {
-      return 1
+      return 1;
     }
     if (cw1 === cw2) {
       if (p1.row > p2.row) {
@@ -39,24 +39,24 @@ export const createPlaceList = (lap: number): Place[] => {
     }
     return 0;
   });
-}
+};
 
 export const viewer = (lap: number): string => {
   const list = createPlaceList(lap);
-  let log = "";
-  for(let row = -lap; row <= lap; row++) {
-    for(let col = -lap; col <= lap; col++) {
+  let log = '';
+  for (let row = -lap; row <= lap; row++) {
+    for (let col = -lap; col <= lap; col++) {
       const index = list.findIndex(p => p.col === col && p.row === row);
       if (index == -1) {
-        log += " ";
+        log += ' ';
       } else {
         log += index.toString();
       }
     }
-    log += "\n";
+    log += '\n';
   }
   return log;
-}
+};
 // ここまでplaceOrderを作成するための関数
 
 const placeOrder: Place[] = [
@@ -105,56 +105,95 @@ const placeOrder: Place[] = [
   { row: 1, col: 3 },
   { row: 0, col: 4 },
   // lap = 5
-  { row: -4, col: -1 }, { row: 4, col: -1 },
-  { row: -3, col: -2 }, { row: 3, col: -2 },
-  { row: -2, col: -3 }, { row: 2, col: -3 },
-  { row: -1, col: -4 }, { row: 1, col: -4 },
-  { row: 0, col: -5 },  { row: -5, col: 0 },
-  { row: 5, col: 0 },   { row: -4, col: 1 },
-  { row: 4, col: 1 },   { row: -3, col: 2 },
-  { row: 3, col: 2 },   { row: -2, col: 3 },
-  { row: 2, col: 3 },   { row: -1, col: 4 },
-  { row: 1, col: 4 },   { row: 0, col: 5 },
+  { row: -4, col: -1 },
+  { row: 4, col: -1 },
+  { row: -3, col: -2 },
+  { row: 3, col: -2 },
+  { row: -2, col: -3 },
+  { row: 2, col: -3 },
+  { row: -1, col: -4 },
+  { row: 1, col: -4 },
+  { row: 0, col: -5 },
+  { row: -5, col: 0 },
+  { row: 5, col: 0 },
+  { row: -4, col: 1 },
+  { row: 4, col: 1 },
+  { row: -3, col: 2 },
+  { row: 3, col: 2 },
+  { row: -2, col: 3 },
+  { row: 2, col: 3 },
+  { row: -1, col: 4 },
+  { row: 1, col: 4 },
+  { row: 0, col: 5 },
   // lap = 6
-  { row: -5, col: -1 }, { row: 5, col: -1 },
-  { row: -4, col: -2 }, { row: 4, col: -2 },
-  { row: -3, col: -3 }, { row: 3, col: -3 },
-  { row: -2, col: -4 }, { row: 2, col: -4 },
-  { row: -1, col: -5 }, { row: 1, col: -5 },
-  { row: 0, col: -6 },  { row: -6, col: 0 },
-  { row: 6, col: 0 },   { row: -5, col: 1 },
-  { row: 5, col: 1 },   { row: -4, col: 2 },
-  { row: 4, col: 2 },   { row: -3, col: 3 },
-  { row: 3, col: 3 },   { row: -2, col: 4 },
-  { row: 2, col: 4 },   { row: -1, col: 5 },
-  { row: 1, col: 5 },   { row: 0, col: 6 },
+  { row: -5, col: -1 },
+  { row: 5, col: -1 },
+  { row: -4, col: -2 },
+  { row: 4, col: -2 },
+  { row: -3, col: -3 },
+  { row: 3, col: -3 },
+  { row: -2, col: -4 },
+  { row: 2, col: -4 },
+  { row: -1, col: -5 },
+  { row: 1, col: -5 },
+  { row: 0, col: -6 },
+  { row: -6, col: 0 },
+  { row: 6, col: 0 },
+  { row: -5, col: 1 },
+  { row: 5, col: 1 },
+  { row: -4, col: 2 },
+  { row: 4, col: 2 },
+  { row: -3, col: 3 },
+  { row: 3, col: 3 },
+  { row: -2, col: 4 },
+  { row: 2, col: 4 },
+  { row: -1, col: 5 },
+  { row: 1, col: 5 },
+  { row: 0, col: 6 },
   // lap = 7
-  { row: -6, col: -1 }, { row: 6, col: -1 },
-  { row: -5, col: -2 }, { row: 5, col: -2 },
-  { row: -4, col: -3 }, { row: 4, col: -3 },
-  { row: -3, col: -4 }, { row: 3, col: -4 },
-  { row: -2, col: -5 }, { row: 2, col: -5 },
-  { row: -1, col: -6 }, { row: 1, col: -6 },
-  { row: 0, col: -7 },  { row: -7, col: 0 },
-  { row: 7, col: 0 },   { row: -6, col: 1 },
-  { row: 6, col: 1 },   { row: -5, col: 2 },
-  { row: 5, col: 2 },   { row: -4, col: 3 },
-  { row: 4, col: 3 },   { row: -3, col: 4 },
-  { row: 3, col: 4 },   { row: -2, col: 5 },
-  { row: 2, col: 5 },   { row: -1, col: 6 },
-  { row: 1, col: 6 },   { row: 0, col: 7 }
+  { row: -6, col: -1 },
+  { row: 6, col: -1 },
+  { row: -5, col: -2 },
+  { row: 5, col: -2 },
+  { row: -4, col: -3 },
+  { row: 4, col: -3 },
+  { row: -3, col: -4 },
+  { row: 3, col: -4 },
+  { row: -2, col: -5 },
+  { row: 2, col: -5 },
+  { row: -1, col: -6 },
+  { row: 1, col: -6 },
+  { row: 0, col: -7 },
+  { row: -7, col: 0 },
+  { row: 7, col: 0 },
+  { row: -6, col: 1 },
+  { row: 6, col: 1 },
+  { row: -5, col: 2 },
+  { row: 5, col: 2 },
+  { row: -4, col: 3 },
+  { row: 4, col: 3 },
+  { row: -3, col: 4 },
+  { row: 3, col: 4 },
+  { row: -2, col: 5 },
+  { row: 2, col: 5 },
+  { row: -1, col: 6 },
+  { row: 1, col: 6 },
+  { row: 0, col: 7 },
 ];
 
-
 interface OrderInput {
-  data: any,
-  place: Place,
+  data: any;
+  place: Place;
 }
 
 export const getOrder = (inp: OrderInput[]): OrderInput[] => {
   return inp.sort((inp1: OrderInput, inp2: OrderInput): number => {
-    const index1 = placeOrder.findIndex((p: Place) => p.row === inp1.place.row && p.col === inp1.place.col);
-    const index2 = placeOrder.findIndex((p: Place) => p.row === inp2.place.row && p.col === inp2.place.col);
+    const index1 = placeOrder.findIndex(
+      (p: Place) => p.row === inp1.place.row && p.col === inp1.place.col
+    );
+    const index2 = placeOrder.findIndex(
+      (p: Place) => p.row === inp2.place.row && p.col === inp2.place.col
+    );
 
     if (index1 === -1) {
       throw new Error(`invalid place: ${inp1.place}`);
@@ -170,4 +209,4 @@ export const getOrder = (inp: OrderInput[]): OrderInput[] => {
     }
     return 0;
   });
-}
+};
