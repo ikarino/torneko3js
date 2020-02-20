@@ -268,6 +268,8 @@ export class Manager {
       return this.actionKillerMachine(f);
     } else if (f.name === 'ホイミスライム') {
       return this.actionHoimiSlime(f);
+    } else if (f.name === 'ドラゴン') {
+      return this.actionDragon(f);
     } else if (f.name === 'リリパット' || f.name === 'ドッグスナイパー') {
       return this.actionArrow(f);
     } else if (monstersSkillAdjacent.includes(f.name)) {

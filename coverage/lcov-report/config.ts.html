@@ -168,7 +168,12 @@
 <a name='L109'></a><a href='#L109'>109</a>
 <a name='L110'></a><a href='#L110'>110</a>
 <a name='L111'></a><a href='#L111'>111</a>
-<a name='L112'></a><a href='#L112'>112</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
@@ -263,15 +268,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
@@ -279,7 +275,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span></td><td class="text"><pre class="prettyprint lang-js">import pino from 'pino';
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import pino from 'pino';
 import { ProbabilityConfig } from './interfaces';
 &nbsp;
 export const DefaultNumSumoLimit = 9;
@@ -287,7 +297,7 @@ export const DefaultNumSumoLimit = 9;
 export const logger = pino({
   level: 'silent',
   base: null,
-  timestamp :false,
+  timestamp: false,
 });
 &nbsp;
 export const defaultProbabilityConf: ProbabilityConfig = {
@@ -298,8 +308,8 @@ export const defaultProbabilityConf: ProbabilityConfig = {
   },
   hoimin: {
     skill: 0.3553, // kompota君の成果
-    attack: 0.30,
-    move: 1.00,
+    attack: 0.3,
+    move: 1.0,
     moveTurn: 50,
   },
 &nbsp;
@@ -317,13 +327,13 @@ export const defaultProbabilityConf: ProbabilityConfig = {
     skill: 0.26,
   },
   haneji: {
-    skill: 0.26,  // 出典なし
-  },  
+    skill: 0.26, // 出典なし
+  },
   mister: {
     skill: 0.12,
   },
   isshi: {
-    skill: 0.10,
+    skill: 0.1,
   },
   flida: {
     skill: 0.22,
@@ -331,48 +341,50 @@ export const defaultProbabilityConf: ProbabilityConfig = {
   rangas: {
     skill: 0.22,
   },
+  rayman: {
+    skill: 0.2, // 出典なし
+  },
 &nbsp;
   // 隣接角抜けあり特技系
   lovelace: {
     skill: 0.2,
   },
   dragosu: {
-    skill: 0.2
+    skill: 0.2,
   },
   drataru: {
-    skill: 0.2
+    skill: 0.2,
   },
 &nbsp;
   // 視界影響なし直線上特技
   lily: {
     skill: 0.5,
-    range: 10,  // 射程
+    range: 10, // 射程
   },
   niper: {
     skill: 0.37,
-    range: 10,  // 射程
+    range: 10, // 射程
   },
   drango: {
     skill: 0.25,
-    range: Infinity
+    range: Infinity,
   },
 &nbsp;
   // さつじんきorエリミネーター
   kororin: {
     omoikkiri: 0.2,
-    tsukon: 0.2, 
+    tsukon: 0.2,
   },
   emily: {
     omoikkiri: 0.2,
-    tsukon: 0.2, 
-  },  
-  
+    tsukon: 0.2,
+  },
+&nbsp;
   // 攻撃+特殊効果系
   baburusu: {
     skill: 0.5,
   },
-}
-&nbsp;
+};
 &nbsp;
 export const monstersSkillAdjacentWOCorner: string[] = [
   'おばけキノコ',
@@ -383,21 +395,24 @@ export const monstersSkillAdjacentWOCorner: string[] = [
   'フライングデビル',
   'ランガー',
   'ミステリードール',
-  'いしにんぎょう'
+  'いしにんぎょう',
 ];
 export const monstersSkillAdjacentWCorner: string[] = [
   'スライムブレス',
   'ドラゴスライム',
-  'ドラゴメタル'
+  'ドラゴメタル',
 ];
-export const monstersSkillAdjacent = monstersSkillAdjacentWOCorner.concat(monstersSkillAdjacentWCorner);</pre></td></tr></table></pre>
+export const monstersSkillAdjacent = monstersSkillAdjacentWOCorner.concat(
+  monstersSkillAdjacentWCorner
+);
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank">istanbul</a>
-                at Thu Feb 20 2020 18:32:56 GMT+0900 (GMT+09:00)
+                at Fri Feb 21 2020 00:51:26 GMT+0900 (GMT+09:00)
             </div>
         </div>
         <script src="prettify.js"></script>
