@@ -1,31 +1,44 @@
-# torneko3js
-PS2ゲーム「トルネコ3」のJavaScriptライブラリ及びスモコンシミュレータ`scs`です。  
-TypeScriptで開発しています。
+<p align="center">
+  <img src="https://github.com/ikarino/web-gscs/blob/master/public/logo.png?raw=true" width=40%>
+</p>
+<h2 align="center">torneko3js</h2>
 
-- [scs](https://github.com/ikarino/scs)の移植
+<img src="https://img.shields.io/github/license/ikarino/torneko3js" />
+<img src="	https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2Fikarino%2Ftorneko3js
+" />
+
+PS2 ゲーム「トルネコ 3」の JavaScript ライブラリ及びスモコンシミュレータ`scs`です。  
+TypeScript で開発しています。
+
+- スモコンシミュレータ`scs`
 - モンスターの能力値計算
 - 行動順補助用の関数
 - 解析データ
 
-## インストール
+## ☣ インストール
 
-### Nodejsの場合
-```shell
+### Nodejs の場合
+
+```sh
 npm install --save torneko3js
 # or
 yarn add torneko3js
 ```
 
 ### ブラウザの場合
-[example/browser](https://github.com/ikarino/torneko3js/tree/master/example/browser)を参照してください。  
-[browserify](http://browserify.org/)でbundle化しています。
 
-### google spreadsheetの場合
+[example/browser](https://github.com/ikarino/torneko3js/tree/master/example/browser)を参照してください。  
+[browserify](http://browserify.org/)で bundle 化しています。
+
+### google spreadsheet の場合
+
 調べています。[clasp](https://github.com/google/clasp)を使うっぽい？
 
-## 使用例
-### scs(CLIツール)
-```bash
+## ☣ 使用例
+
+### `scs`(CLI ツール)
+
+```sh
 $ scs -h
 Usage: scs [options]
 
@@ -37,6 +50,7 @@ Options:
 ```
 
 ### ライブラリ(JavaScript, TypeScript)
+
 ```js
 import { Manager, sampleSCSInputs } from 'torneko3js';
 
@@ -46,16 +60,20 @@ m.trial();
 console.log(m.toJson());
 ```
 
-## 実装
+## ☣ 実装
+
 ### システム
-- [x] scs移植
-- [x] kompotaさんの分裂方向
+
+- [x] scs 移植
+- [x] kompota さんの分裂方向
 - [x] はぐれ状態ホイミン
 - [x] 行動順補助用の関数
 - [x] 解析データ
 
 ### 特技
+
 確率が判明していないものも多いので、おいおい実装します。
+
 - [x] キラーマシン／さそりかまきり
 - [x] ホイミスライム
 - [x] おばけキノコ
@@ -79,7 +97,7 @@ console.log(m.toJson());
 - [x] きとうし／ようじゅつしは封印が前提となるため実装しない
 - [x] カエル系は封印が前提となるため実装しない
 - [x] 爆発系（デビルアンカー／リビングハンマー／キラースター／ばくだんいわ／メガザルロック）は実装しない
-- [x] ゆうれいはscsを根本から見直す必要があるので実装しない
+- [x] ゆうれいは scs を根本から見直す必要があるので実装しない
 - [x] げんじゅつしはスモコンに悪影響なので実装しない
 - [x] ダースドラゴンはスモコンに悪影響なので実装しない
 - [x] コロマージはバイキルトが悪影響なので実装しない
@@ -88,6 +106,7 @@ console.log(m.toJson());
 - [x] モシャスナイトは複雑すぎるので実装しない
 
 ### 受身形効果
+
 - [x] スモールグール
 - [ ] ラリホーアント
 - [ ] じごくのよろい
@@ -98,78 +117,13 @@ console.log(m.toJson());
 ### ホイミンの行動モデル
 
 1. 周囲の傷ついたキャラの数を取得
-1. ホイミ発動を判断（ランダム） ← ダメージを負ったユニットごとに判定するモデル
+1. ホイミ発動を判断（ランダム） ← ダメージを負ったユニットごとに判定する
 1. 攻撃可能なキャラの数を取得
-1. 攻撃を判断（ランダム） ← 攻撃可能なユニットごとに判定するモデル
+1. 攻撃を判断（ランダム） ← 攻撃可能なユニットごとに判定する
 1. 移動可能なマスの数を取得
 1. いっしょにいてね、はぐれ状態の場合、移動を判断（ランダム）
 
-## 入力の構成
-入力はJSON形式です。  
-詳細は[src/lib/interfaces.ts](https://github.com/ikarino/torneko3js/blob/master/src/lib/interfaces.ts)を参照してください。  
-以下の3つのパートに分かれています。
-- friends: 仲間の情報（種類・レベル・弱化状態等）
-- field: 仲間・壁・種スモの配置を表すフィールド
-- config: 試行回数と試行ターン数、確率設定
+## ☣ 入出力構成
 
-### friends
-以下の項目を行動順に合わせて10匹分、行動順に配列として与えます。
-|入力|区分|詳細|
-|:---:|:---:|:---|
-|name|必須|キラーマシンなどの名前|
-|lv|必須|レベル|
-|doubleSpeed|オプション|倍速の場合はtrue。デフォルトはfalse（等速）。|
-|hpDope   |オプション|HPドーピング量。デフォルトは0。|
-|atkDope  |オプション|力ドーピング量。デフォルトは0。|
-|weakenAtk|オプション|攻撃力弱化回数。デフォルトは0。|
-|weakenDef|オプション|防御力弱化回数。デフォルトは0。|
-|isSealed |オプション|封印状態の場合はtrue。デフォルトはfalse。|
-|isSticked|オプション|いっしょにいてねの場合はfalse。デフォルトはtrue。ホイミン以外は強制的にtrue。|
-
-### field
-|入力|区分|詳細|
-|:---:|:---:|:---|
-|col|必須|行数（横方向のマスの数）|
-|row|必須|列数（縦方向のマスの数）|
-|data|必須|空白/壁/種スモ=0/1/9。仲間は10から連番で19まで。|
-
-### config
-|入力|区分|詳細|
-|:---:|:---:|:---|
-|trial|必須|試行回数|
-|turn|必須|試行ターン数|
-|numSumoLimit|オプション|存在できる敵スモグル数の上限。デフォルトは9匹。|
-|pconf|オプション|確率設定|
-
-## 出力の構成
-1試行あたりの出力もJSON形式です。  
-詳細は[src/lib/interfaces.ts](https://github.com/ikarino/torneko3js/blob/master/src/lib/interfaces.ts)を参照してください。  
-以下の3つのパートに分かれています。
-- result: 終了理由、経過ターン数等
-- exp: 経験値関係
-- loss: 行動ロス、分裂ロス
-
-### result
-|出力|詳細|
-|:---:|:---|
-|finishState|終状態。無事終了／仲間死亡／敵スモ消滅|
-|turnPassed|終了時経過ターン数|
-|orderOfKilledFriends|死亡した仲間（達）の行動順|
-
-### exp
-|出力|詳細|
-|:---:|:---|
-|total|全ターン合計の経験値|
-|perTurn|ターンあたりの経験値|
-|perMonster|モンスターごとの経験値|
-|perMonsterPerTurn|ターンあたりのモンスターごとの経験値|
-
-### loss
-|出力|詳細|
-|:---:|:---|
-|action|行動しなかった割合|
-|division|攻撃して生き残った試行のうち、分裂スペースが無かった割合|
-
-
-## ライセンス
-MIT
+全て JSON 形式です。  
+詳細は[src/lib/interfaces.ts](https://github.com/ikarino/torneko3js/blob/master/src/lib/interfaces.ts)を参照してください。

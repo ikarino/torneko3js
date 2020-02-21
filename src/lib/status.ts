@@ -3307,6 +3307,12 @@ interface BasicMonsterStatus {
   readonly recovery: number;
 }
 
+/**
+ * 種族名とレベルから基本ステータスを求める関数
+ * @param name 種族名(e.g. キラーマシン)
+ * @param lv レベル
+ * @returns {BasicMonsterStatus} 基本ステータス
+ */
 export const getBasicMonsterStatus = (name: string, lv: number): BasicMonsterStatus => {
   const basicMonsterStatusDict: { [index: string]: BasicMonsterStatus } = {
     いたずらもぐら: {

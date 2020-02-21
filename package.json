@@ -19,9 +19,12 @@
   "types": "dist/lib/index.d.ts",
   "scripts": {
     "test": "jest",
+    "uglify:dist": "find dist/lib -maxdepth 1 -iname '*.js' -exec uglifyjs --compress --mangle -o {} -- {} ;",
+    "optimize": "ttsc && npm run delete:map && npm run uglify:dist",
     "build": "ttsc",
+    "delete:map": "rimraf dist/**/*.map",
     "prepublishOnly": "npm run build",
-    "browser": "browserify -r ./src/lib/index.ts:torneko3 -p [ tsify --noImplicitAny ] > example/browser/torneko3.bundle.js"
+    "browser": "browserify -r ./src/lib/index.ts:torneko3 -p [ tsify --noImplicitAny ] | uglifyjs -o example/browser/torneko3.bundle.js"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -45,8 +48,8 @@
     "commander": "^4.1.1",
     "pino": "^5.16.0",
     "readline-sync": "^1.4.10",
-    "typescript-is": "^0.14.1",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "typescript-is": "^0.14.1"
   },
   "devDependencies": {
     "@types/commander": "^2.12.2",
@@ -56,9 +59,11 @@
     "@types/readline-sync": "^1.4.3",
     "browserify": "^16.5.0",
     "jest": "^25.1.0",
+    "rimraf": "^3.0.2",
     "ts-jest": "^25.2.0",
     "ts-node": "^8.6.2",
     "tsify": "^4.0.1",
-    "ttypescript": "^1.5.10"
+    "ttypescript": "^1.5.10",
+    "uglify-js": "^3.8.0"
   }
 }

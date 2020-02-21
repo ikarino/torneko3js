@@ -9,6 +9,12 @@ package-lock.json
 .DS_Store
 Thumbs.db
 
-# Ignore built ts files
+# Ignore built files
 dist/**/*
 *.tar.gz
+
+# jest-coverage
+coverage
+
+# typedoc
+doc
