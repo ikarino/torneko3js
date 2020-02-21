@@ -3,9 +3,8 @@
 </p>
 <h2 align="center">torneko3js</h2>
 
-<img src="https://img.shields.io/github/license/ikarino/torneko3js" />
-<img src="	https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2Fikarino%2Ftorneko3js
-" />
+![license](https://img.shields.io/github/license/ikarino/torneko3js)
+![twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2Fikarino%2Ftorneko3js)
 
 PS2 ゲーム「トルネコ 3」の JavaScript ライブラリ及びスモコンシミュレータ`scs`です。  
 TypeScript で開発しています。
