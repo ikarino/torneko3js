@@ -7,3 +7,4 @@ export { sampleInputs as sampleSCSInputs } from './sampleInputs';
 export { Friend, Enemy } from './unit';
 export { kaisekiData } from './kaisekiData';
 export { getOrder } from './actionOrder';
+export * from './interfaces';
