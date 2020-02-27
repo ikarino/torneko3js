@@ -549,7 +549,7 @@ export const sampleInputs: { [index: string]: SCSInput } = {
         1,
         1,
         1,
-        0,
+        1,
         0,
         0,
         0,
@@ -932,6 +932,7 @@ export const sampleInputs: { [index: string]: SCSInput } = {
       {
         name: 'ドッグスナイパー',
         lv: 99,
+        doubleSpeed: true,
       },
     ],
     field: {

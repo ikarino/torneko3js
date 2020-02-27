@@ -2,9 +2,9 @@
 //
 
 export { getBasicMonsterStatus } from './status';
-export { Manager } from './manager';
+export { Manager, summarizeSCSOutputs } from './manager';
 export { sampleInputs as sampleSCSInputs } from './sampleInputs';
 export { Friend, Enemy } from './unit';
-export { kaisekiData } from './kaisekiData';
+// export { kaisekiData } from './kaisekiData';
 export { getOrder } from './actionOrder';
 export * from './interfaces';

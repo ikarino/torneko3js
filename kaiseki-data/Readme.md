@@ -1,7 +1,11 @@
-かなり書きなぐっているPythonスクリプトなので注意。
+かなり書きなぐっている Python スクリプトなので注意。
+
+このライブラリでのサポートはやめました。
 
 # 解析データの前処理
-生解析データはhtmlなので、Pythonで前処理する
+
+生解析データは html なので、Python で前処理する
+
 ```bash
 # ダウンロード
 wget https://img.atwikiimg.com/www37.atwiki.jp/toruneko3/attach/1/1/解析データ.zip
@@ -17,6 +21,7 @@ python toTypescript.py
 ```
 
 # 処理後の構成
+
 ```javascript
 {
   dungeonName1: [

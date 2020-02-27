@@ -467,7 +467,7 @@ export class Manager {
     // 1. 確率的に矢を打たなかった、もしくは矢の対象が見つからなかったとき
     if (num === 0) {
       logger.debug('  => skill not triggered or target not found');
-      return this.actionNormal(f);  // 通常攻撃行動に移る
+      return this.actionNormal(f); // 通常攻撃行動に移る
     }
     // 2. 矢が外れた時
     if (Math.random() > this.pConf.basic.arrow) {
@@ -486,7 +486,7 @@ export class Manager {
     // http://twist.jpn.org/sfcsiren/index.php?%E3%83%80%E3%83%A1%E3%83%BC%E3%82%B8%E8%A8%88%E7%AE%97%E5%BC%8F#m266135b
     // 基本攻撃力+{基本攻撃力×(矢の強さ-8)/16の小数点以下を四捨五入した値}
     // トルネコ3とシレンの屋の攻撃力の差を吸収するために"-8"を"-3"にしている。
-    let damage = f.atk + Math.round(f.atk * (arrowPower - 3) / 16);
+    let damage = f.atk + Math.round((f.atk * (arrowPower - 3)) / 16);
     damage *= Math.pow(35 / 36, target.def);
     damage = Math.round(damage * (Math.random() / 4 + 7 / 8));
     target.chp -= damage;
@@ -523,7 +523,7 @@ export class Manager {
     // 1. 確率的に炎を吐かなかった、もしくは炎の対象が見つからなかったとき
     if (num === 0) {
       logger.debug('  => skill not triggered or target not found');
-      return this.actionNormal(f);  // 通常攻撃行動に移る
+      return this.actionNormal(f); // 通常攻撃行動に移る
     }
 
     // 2. 炎のダメージ処理
@@ -695,37 +695,41 @@ export class Manager {
    * 計算結果を集計する
    */
   summarizeOutputs(): SCSSummarizedOutput {
-    let countOfKilledFriends = new Array<number>(this.friends.length).fill(0);
-    for (const output of this.trialOutputs) {
-      for (const order of output.result.orderOfKilledFriends) {
-        countOfKilledFriends[order]++;
-      }
-    }
-
-    return {
-      result: {
-        finishState: {
-          success: this.trialOutputs.filter(o => o.result.finishState === 'success').length,
-          killed: this.trialOutputs.filter(o => o.result.finishState === 'killed').length,
-          genocided: this.trialOutputs.filter(o => o.result.finishState === 'genocided').length,
-        },
-        turnPassed: {
-          mean: mean(this.trialOutputs.map(o => o.result.turnPassed)),
-          std: std(this.trialOutputs.map(o => o.result.turnPassed)),
-        },
-        countOfKilledFriends,
-      },
-      exp: {
-        total: {
-          mean: mean(this.trialOutputs.map(o => o.exp.total)),
-          std: std(this.trialOutputs.map(o => o.exp.total)),
-        },
-        perMonster: getMeanAndStdFromArray(this.trialOutputs.map(o => o.exp.perMonster)),
-      },
-      loss: {
-        action: getMeanAndStdFromArray(this.trialOutputs.map(o => o.loss.action)),
-        division: getMeanAndStdFromArray(this.trialOutputs.map(o => o.loss.division)),
-      },
-    };
+    return summarizeSCSOutputs(this.trialOutputs);
   }
 }
+
+export const summarizeSCSOutputs = (outputs: SCSTrialOutput[]): SCSSummarizedOutput => {
+  let countOfKilledFriends = new Array<number>(outputs[0].exp.perMonster.length).fill(0);
+  for (const output of outputs) {
+    for (const order of output.result.orderOfKilledFriends) {
+      countOfKilledFriends[order]++;
+    }
+  }
+
+  return {
+    result: {
+      finishState: {
+        success: outputs.filter(o => o.result.finishState === 'success').length,
+        killed: outputs.filter(o => o.result.finishState === 'killed').length,
+        genocided: outputs.filter(o => o.result.finishState === 'genocided').length,
+      },
+      turnPassed: {
+        mean: mean(outputs.map(o => o.result.turnPassed)),
+        std: std(outputs.map(o => o.result.turnPassed)),
+      },
+      countOfKilledFriends,
+    },
+    exp: {
+      total: {
+        mean: mean(outputs.map(o => o.exp.total)),
+        std: std(outputs.map(o => o.exp.total)),
+      },
+      perMonster: getMeanAndStdFromArray(outputs.map(o => o.exp.perMonster)),
+    },
+    loss: {
+      action: getMeanAndStdFromArray(outputs.map(o => o.loss.action)),
+      division: getMeanAndStdFromArray(outputs.map(o => o.loss.division)),
+    },
+  };
+};
