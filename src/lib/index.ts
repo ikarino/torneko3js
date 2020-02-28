@@ -2,7 +2,7 @@
 //
 
 export { getBasicMonsterStatus } from './status';
-export { Manager, summarizeSCSOutputs } from './manager';
+export { Manager, summarizeSCSOutputs, overWriteDefaultProbabilityConfig } from './manager';
 export { sampleInputs as sampleSCSInputs } from './sampleInputs';
 export { Friend, Enemy } from './unit';
 // export { kaisekiData } from './kaisekiData';

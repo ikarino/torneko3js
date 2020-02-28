@@ -38,7 +38,7 @@ const addPlace = (place1: Place, place2: Place): Place => {
   };
 };
 
-const overWriteDefaultProbabilityConfig = (conf: OverWriter): ProbabilityConfig => {
+export const overWriteDefaultProbabilityConfig = (conf: OverWriter): ProbabilityConfig => {
   let c = defaultProbabilityConf;
 
   try {
@@ -56,6 +56,41 @@ const overWriteDefaultProbabilityConfig = (conf: OverWriter): ProbabilityConfig 
   }
 
   return c;
+};
+
+export const summarizeSCSOutputs = (outputs: SCSTrialOutput[]): SCSSummarizedOutput => {
+  let countOfKilledFriends = new Array<number>(outputs[0].exp.perMonster.length).fill(0);
+  for (const output of outputs) {
+    for (const order of output.result.orderOfKilledFriends) {
+      countOfKilledFriends[order]++;
+    }
+  }
+
+  return {
+    result: {
+      finishState: {
+        success: outputs.filter(o => o.result.finishState === 'success').length,
+        killed: outputs.filter(o => o.result.finishState === 'killed').length,
+        genocided: outputs.filter(o => o.result.finishState === 'genocided').length,
+      },
+      turnPassed: {
+        mean: mean(outputs.map(o => o.result.turnPassed)),
+        std: std(outputs.map(o => o.result.turnPassed)),
+      },
+      countOfKilledFriends,
+    },
+    exp: {
+      total: {
+        mean: mean(outputs.map(o => o.exp.total)),
+        std: std(outputs.map(o => o.exp.total)),
+      },
+      perMonster: getMeanAndStdFromArray(outputs.map(o => o.exp.perMonster)),
+    },
+    loss: {
+      action: getMeanAndStdFromArray(outputs.map(o => o.loss.action)),
+      division: getMeanAndStdFromArray(outputs.map(o => o.loss.division)),
+    },
+  };
 };
 
 export class Manager {
@@ -195,6 +230,8 @@ export class Manager {
     for (let turn = 0; turn < this.config.turn; turn++) {
       // 1ターン経過
       this.turn();
+      this.turnNow += 1;
+
       // 仲間が倒れていないかチェック
       for (const friend of this.friends) {
         if (friend.chp < 0) {
@@ -205,8 +242,6 @@ export class Manager {
       if (this.enemys.length === 0) {
         return;
       }
-
-      this.turnNow += 1;
     }
     this.killCount -= this.enemys.length;
   }
@@ -698,38 +733,3 @@ export class Manager {
     return summarizeSCSOutputs(this.trialOutputs);
   }
 }
-
-export const summarizeSCSOutputs = (outputs: SCSTrialOutput[]): SCSSummarizedOutput => {
-  let countOfKilledFriends = new Array<number>(outputs[0].exp.perMonster.length).fill(0);
-  for (const output of outputs) {
-    for (const order of output.result.orderOfKilledFriends) {
-      countOfKilledFriends[order]++;
-    }
-  }
-
-  return {
-    result: {
-      finishState: {
-        success: outputs.filter(o => o.result.finishState === 'success').length,
-        killed: outputs.filter(o => o.result.finishState === 'killed').length,
-        genocided: outputs.filter(o => o.result.finishState === 'genocided').length,
-      },
-      turnPassed: {
-        mean: mean(outputs.map(o => o.result.turnPassed)),
-        std: std(outputs.map(o => o.result.turnPassed)),
-      },
-      countOfKilledFriends,
-    },
-    exp: {
-      total: {
-        mean: mean(outputs.map(o => o.exp.total)),
-        std: std(outputs.map(o => o.exp.total)),
-      },
-      perMonster: getMeanAndStdFromArray(outputs.map(o => o.exp.perMonster)),
-    },
-    loss: {
-      action: getMeanAndStdFromArray(outputs.map(o => o.loss.action)),
-      division: getMeanAndStdFromArray(outputs.map(o => o.loss.division)),
-    },
-  };
-};
