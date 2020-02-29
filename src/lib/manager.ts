@@ -114,7 +114,7 @@ export class Manager {
     this.trialOutputs = [];
   }
 
-  protected init(): void {
+  init(): void {
     this.friends = [];
     this.enemys = [];
     this.killCount = 0;
@@ -258,7 +258,7 @@ export class Manager {
     }
   }
 
-  protected actionEnemy(enemy: Enemy): void {
+  actionEnemy(enemy: Enemy): void {
     // 1. 攻撃を試みる
     const targets = this.field.findTargets(enemy.place);
     if (targets.length !== 0) {
@@ -296,7 +296,7 @@ export class Manager {
     }
   }
 
-  protected actionFriend(f: Friend): boolean {
+  actionFriend(f: Friend): boolean {
     if (f.isSealed) {
       return this.actionNormal(f);
     } else if (f.name === 'キラーマシン' || f.name === 'さそりかまきり') {
