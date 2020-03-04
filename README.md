@@ -126,3 +126,9 @@ console.log(m.toJson());
 
 全て JSON 形式です。  
 詳細は[src/lib/interfaces.ts](https://github.com/ikarino/torneko3js/blob/master/src/lib/interfaces.ts)を参照してください。
+
+## ☣ JSON validation
+
+[typescript-json-schema](https://github.com/YousefED/typescript-json-schema)で雛形を作って整形した。
+
+あとは[ajv](https://github.com/epoberezkin/ajv)に食わせただけ。
