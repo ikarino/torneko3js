@@ -39,7 +39,7 @@ const addPlace = (place1: Place, place2: Place): Place => {
 };
 
 export const overWriteDefaultProbabilityConfig = (conf: OverWriter): ProbabilityConfig => {
-  let c = defaultProbabilityConf;
+  let c = JSON.parse(JSON.stringify(defaultProbabilityConf));
 
   try {
     for (const k of Object.keys(conf)) {

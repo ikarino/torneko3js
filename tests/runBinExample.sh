@@ -4,6 +4,7 @@ inputs=(
   "invalidJson.json"
   "noFriends.json"
   "notSCSInput.json"
+  "overWriteTest.json"
 )
 
 for i in ${inputs[@]}
