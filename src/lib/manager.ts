@@ -17,7 +17,7 @@ import {
   defaultProbabilityConf,
   monstersSkillAdjacent,
   monstersSkillAdjacentWCorner,
-  monstersSkillAdjacentWOCorner,
+  // monstersSkillAdjacentWOCorner,
   logger,
 } from './config';
 import checkInp from './checkInp';
@@ -272,6 +272,31 @@ export class Manager {
       return; // 攻撃したら終了
     }
     // 2. 移動を試みる
+    // 2.1 角抜け位置にFriendがいる場合
+    const cornerTargets = this.field.findTargets(enemy.place, true);
+    if (cornerTargets.length > 0) {
+      /** [MEMO]
+       * このifに入る時点で、角抜け位置にFriendがいて、片方または両方が壁になっている。
+       * 角抜け位置のFriendに近づけない場合（3つめのパターン）は動かないことにする(TODO)。
+       *
+       *   ##EE        EE       ##EE
+       *   FF    or  FF##   or  FF##
+       *
+       * 角抜け位置にFriendが複数いる場合、近接する優先度は行動順で決まると思われる。
+       * 行動順で探し、片方が壁になっているFriendを見つけたら移動する形で実装する(TODO)。
+       **/
+      for (const target of cornerTargets.sort((a, b) => a - b)) {
+        const place = this.field.getCorner(this.friends[target - 10].place, enemy.place);
+        if (place.col !== -1) {
+          this.field.setField(enemy.place, 0);
+          this.field.setField(place, enemy.num + 20);
+          enemy.place = place;
+          return;
+        }
+      }
+      return;
+    }
+    // 2.2 角抜け位置にFriendがいない場合
     const emptyPlaces = this.field.findVacants(enemy.place, false);
     if (emptyPlaces.length !== 0) {
       const place = emptyPlaces[randint(emptyPlaces.length)];

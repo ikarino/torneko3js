@@ -78,7 +78,6 @@ export class SCSField {
    * @param withCorner 角抜け位置を含めるかどうか
    */
   findVacants(place: Place, withCorner = false): Place[] {
-    const myNumber = this.getField(place);
     const rowMe = place.row;
     const colMe = place.col;
 
@@ -121,7 +120,6 @@ export class SCSField {
    * @returns 特技適用キャラの番号、または0
    */
   findLineTarget(place: Place, probability: number, range: number = Infinity): number {
-    const myNumber = this.getField(place);
     const rowMe = place.row;
     const colMe = place.col;
     let target = -1;
@@ -225,6 +223,24 @@ export class SCSField {
     }
 
     return 0;
+  }
+
+  /**
+   * 角抜け位置関係にあるユニット間の壁／空白の情報を得る。
+   * ただし、少なくとも片方は壁である前提。
+   * 移動可能であれば移動先の位置、不可能であれば{col: -1, row: -1}を返す
+   * @param p1 ユニット1の位置
+   * @param p2 ユニット2の位置
+   */
+  getCorner(p1: Place, p2: Place): Place {
+    let p = { col: -1, row: -1 };
+
+    if (this.getField({ col: p1.col, row: p2.row }) === 0) {
+      p = { col: p1.col, row: p2.row };
+    } else if (this.getField({ col: p2.col, row: p1.row }) === 0) {
+      p = { col: p2.col, row: p1.row };
+    }
+    return p;
   }
 
   show(): string {

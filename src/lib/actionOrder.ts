@@ -47,7 +47,7 @@ export const viewer = (lap: number): string => {
   for (let row = -lap; row <= lap; row++) {
     for (let col = -lap; col <= lap; col++) {
       const index = list.findIndex(p => p.col === col && p.row === row);
-      if (index == -1) {
+      if (index === -1) {
         log += ' ';
       } else {
         log += index.toString();
